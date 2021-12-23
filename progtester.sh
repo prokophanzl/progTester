@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 PROG=$1
-# DIR=$2
 DIR=${2%/}
 
 RED='\033[0;31m'

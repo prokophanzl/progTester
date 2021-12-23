@@ -27,14 +27,7 @@ echo -e "${YELLOW}Testing...${NC}"
 for IN_FILE in "$DIR"/*_in.txt; do
 	REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
 	/tmp/progtester/tester < $IN_FILE > /tmp/progtester/myout
-	# echo
 	if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
-		# echo
-		# echo -e "${YELLOW}input:${NC}"
-		# cat $IN_FILE
-		# echo
-		# echo -e "${YELLOW}expected output:${NC}"
-		# cat $REF_FILE
 		echo -e "${RED}FAIL: ${NC}$IN_FILE"
 		FAIL=$((FAIL+1))
 

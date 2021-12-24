@@ -72,4 +72,8 @@ echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
 
 rm -r /tmp/progtester
 
-exit 0
+if [ $TOTAL -eq $SUCCESS ]; then
+	exit 0
+else
+	exit 2
+fi

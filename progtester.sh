@@ -16,6 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+VERSION='0.1.0'
+
 PROG=$1
 DIR=$2
 
@@ -23,10 +25,25 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;36m'
+BOLD='\033[1m'
 NC='\033[0m'
 
 SUCCESS=0
 FAIL=0
+
+echo_help() {
+	echo -e "${BLUE}progTester v$VERSION${NC}"
+	echo -e "${BOLD}       usage:${NC} progtester <source-code> <testdata>"
+	echo -e "${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}"
+	exit 0
+}
+
+while getopts "h" OPT; do
+	case $OPT in
+		h)	echo_help
+			;;
+	esac
+done
 
 mkdir -p /tmp/progtester
 

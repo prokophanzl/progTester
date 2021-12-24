@@ -83,7 +83,7 @@ cleanup() {
 }
 
 compile_code() {
-	if [[ $QUIET -eq 0 ]]; then
+	if [[ $QUIET == 0 ]]; then
 		echo -e "${YELLOW}Compiling...${NC}"
 	fi
 
@@ -118,15 +118,15 @@ compare_outs() {
 }
 
 test_code() {
-	if [[ $QUIET -eq 0 ]]; then
+	if [[ $QUIET == 0 ]]; then
 		echo -e "${YELLOW}Testing...${NC}"
 	fi
 	for IN_FILE in "$DIR"/*_in.txt; do
 		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
 		
 		do_timeout
-		if [ $? -eq 124 ]; then
-			if [[ $QUIET -eq 0 ]]; then
+		if [ $? == 124 ]; then
+			if [[ $QUIET == 0 ]]; then
 					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
 				fi
 				((FAIL++))
@@ -134,7 +134,7 @@ test_code() {
 		else
 			if ! compare_outs; then
 
-				if [[ $QUIET -eq 0 ]]; then
+				if [[ $QUIET == 0 ]]; then
 					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
 				fi
 				((FAIL++))
@@ -154,12 +154,12 @@ test_code() {
 					>&2 echo "Your output:" >> "$WRONGOUTDIR$SHORTREF"
 					>&2 cat /tmp/progtester/myout >> "$WRONGOUTDIR$SHORTREF"
 
-					if [[ $QUIET -eq 0 ]]; then
+					if [[ $QUIET == 0 ]]; then
 						>&2 echo -e "    ${YELLOW}> see $WRONGOUTDIR$SHORTREF${NC}"
 					fi
 				fi
 			else
-				if [[ $QUIET -eq 0 ]]; then
+				if [[ $QUIET == 0 ]]; then
 					echo -e "${GREEN}OK: ${NC}$IN_FILE"
 				fi
 				((SUCCESS++))
@@ -171,7 +171,7 @@ test_code() {
 print_stats() {
 	TOTAL=$(($FAIL+$SUCCESS))
 	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
-	if [[ $QUIET -eq 1 ]] && [[ $WRONGOUTDIR != 0 ]]; then
+	if [[ $QUIET == 1 ]] && [[ $WRONGOUTDIR != 0 ]]; then
 		echo -e "${YELLOW}See $WRONGOUTDIR$SHORTREF for wrong output data${NC}"
 	fi
 }
@@ -209,7 +209,7 @@ print_stats
 
 cleanup
 
-if [[ $TOTAL -eq $SUCCESS ]]; then
+if [[ $TOTAL == $SUCCESS ]]; then
 	exit 0
 else
 	exit 2

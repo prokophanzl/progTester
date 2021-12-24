@@ -21,8 +21,12 @@ VERSION='0.5.1'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
+LIGHTYELLOW='\033[0;93m'
+PURPLE='\033[0;94m'
 BLUE='\033[0;36m'
+GRAY='\033[0;90m'
 BOLD='\033[1m'
+ITALIC='\033[0;03m'
 NC='\033[0m'
 
 PROG=0
@@ -32,6 +36,8 @@ WRONGOUTDIR=0
 TIMEOUT=0
 OUTPUT='/tmp/progtester/tester'
 SORTOUTPUT=0
+CLOCK=0
+TOTALTIME=0
 
 SUCCESS=0
 FAIL=0
@@ -77,6 +83,7 @@ echo_help() {
 	echo -e             "              ${BLUE}-o <output>${NC} or ${BLUE}--output <output>${NC} to specify where to save the"
 	echo                "                 output file"
 	echo -e             "              ${BLUE}-u${NC} or ${BLUE}--unsorted-output${NC} to allow outputs to be in any order"
+	echo -e             "              ${BLUE}-c${NC} or ${BLUE}--clock${NC} to show runtime for each input"
 	echo
 	echo -e "${BOLD}Copyright (C) 2021 Prokop Hanzl${NC}"
 	echo    "This program is free software: you can redistribute it and/or modify it under"
@@ -94,7 +101,7 @@ cleanup() {
 
 compile_code() {
 	if [[ $QUIET == 0 ]]; then
-		echo -e "${YELLOW}Compiling...${NC}"
+		echo -e "${LIGHTYELLOW}Compiling...${NC}"
 	fi
 
 	COMPILER=g++
@@ -110,11 +117,14 @@ compile_code() {
 }
 
 do_timeout() {
+	TIME1=$(gdate +%s%3N)
 	if [[ $OSTYPE == 'darwin'* ]]; then
 		gtimeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
 	else
 		timeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
 	fi
+	TIMEOUTRET=$?
+	TIME2=$(gdate +%s%3N)
 }
 
 compare_outs() {
@@ -127,25 +137,30 @@ compare_outs() {
 	fi
 }
 
+print_time() {
+	MS="000$1"
+	>&2 echo -e "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
+}
+
 test_code() {
 	if [[ $QUIET == 0 ]]; then
-		echo -e "${YELLOW}Testing...${NC}"
+		echo -e "${LIGHTYELLOW}Testing...${NC}"
 	fi
 	for IN_FILE in "$DIR"/*_in.txt; do
 		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
 		
 		do_timeout
-		if [ $? == 124 ]; then
+		if [ $TIMEOUTRET == 124 ]; then
 			if [[ $QUIET == 0 ]]; then
-					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
-				fi
-				((FAIL++))
-			echo -e "    ${YELLOW}> killed after $TIMEOUT seconds${NC}"
+				>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
+				>&2 echo -e "    ${GRAY}> ${YELLOW}killed after ${PURPLE}${TIMEOUT}s${NC}"
+			fi
+			((FAIL++))
 		else
 			if ! compare_outs; then
 
 				if [[ $QUIET == 0 ]]; then
-					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
+					>&2 echo -e "${RED}${BOLD}FAIL: ${NC}${BOLD}$IN_FILE${NC}"
 				fi
 				((FAIL++))
 
@@ -165,14 +180,19 @@ test_code() {
 					>&2 cat /tmp/progtester/myout >> "$WRONGOUTDIR$SHORTREF"
 
 					if [[ $QUIET == 0 ]]; then
-						>&2 echo -e "    ${YELLOW}> see $WRONGOUTDIR$SHORTREF${NC}"
+						>&2 echo -e "    ${GRAY}> see ${PURPLE}$WRONGOUTDIR$SHORTREF${NC}"
 					fi
 				fi
+
 			else
 				if [[ $QUIET == 0 ]]; then
-					echo -e "${GREEN}OK: ${NC}$IN_FILE"
+					echo -e "${GREEN}${BOLD}OK: ${NC}${BOLD}$IN_FILE${NC}"
 				fi
 				((SUCCESS++))
+			fi
+
+			if [[ $QUIET == 0 ]] && [[ $CLOCK == 1 ]]; then
+				print_time $((TIME2-$TIME1))
 			fi
 		fi
 	done
@@ -182,11 +202,11 @@ print_stats() {
 	TOTAL=$(($FAIL+$SUCCESS))
 	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
 	if [[ $QUIET == 1 ]] && [[ $WRONGOUTDIR != 0 ]]; then
-		echo -e "${YELLOW}See $WRONGOUTDIR$SHORTREF for wrong output data${NC}"
+		echo -e "See ${PURPLE}$WRONGOUTDIR${NC} for wrong output data"
 	fi
 }
 
-while getopts ":hs:t:qvw:k:o:u" OPT; do
+while getopts ":hs:t:qvw:k:o:uc" OPT; do
 	case $OPT in
 		h)	echo_help
 			;;
@@ -205,6 +225,8 @@ while getopts ":hs:t:qvw:k:o:u" OPT; do
 		o)	OUTPUT=./$OPTARG
 			;;
 		u)	SORTOUTPUT=1
+			;;
+		c)	CLOCK=1
 			;;
 	esac
 done

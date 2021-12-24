@@ -113,7 +113,7 @@ test_code() {
 			if [[ $QUIET -eq 0 ]]; then
 					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
 				fi
-				FAIL=$((FAIL+1))
+				((FAIL++))
 			echo -e "    ${YELLOW}> killed after $TIMEOUT seconds${NC}"
 		else
 			if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
@@ -121,7 +121,7 @@ test_code() {
 				if [[ $QUIET -eq 0 ]]; then
 					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
 				fi
-				FAIL=$((FAIL+1))
+				((FAIL++))
 
 				if [[ "$WRONGOUTDIR" != 0 ]]; then
 					mkdir -p "$WRONGOUTDIR"
@@ -146,7 +146,7 @@ test_code() {
 				if [[ $QUIET -eq 0 ]]; then
 					echo -e "${GREEN}OK: ${NC}$IN_FILE"
 				fi
-				SUCCESS=$((SUCCESS+1))
+				((SUCCESS++))
 			fi
 		fi
 	done

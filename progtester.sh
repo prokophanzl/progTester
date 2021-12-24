@@ -32,7 +32,7 @@ mkdir -p /tmp/progtester
 
 echo -e "${YELLOW}Compiling...${NC}"
 if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o /tmp/progtester/tester; then
-	echo -e "${RED}Error compiling.${NC}"
+	>&2 echo -e "${RED}Error compiling.${NC}"
 	rm -r /tmp/progtester
 	exit 1
 fi
@@ -43,23 +43,23 @@ for IN_FILE in "$DIR"/*_in.txt; do
 	REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
 	/tmp/progtester/tester < $IN_FILE > /tmp/progtester/myout
 	if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
-		echo -e "${RED}FAIL: ${NC}$IN_FILE"
+		>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
 		FAIL=$((FAIL+1))
 
 		mkdir -p wrong_testdata
 
-		echo "Input:" >> wrong_$REF_FILE
-		cat $IN_FILE >> wrong_$REF_FILE
-		echo >> wrong_$REF_FILE
+		>&2 echo "Input:" >> wrong_$REF_FILE
+		>&2 cat $IN_FILE >> wrong_$REF_FILE
+		>&2 echo >> wrong_$REF_FILE
 		
-		echo "Expected output:" >> wrong_$REF_FILE
-		cat $REF_FILE >> wrong_$REF_FILE
-		echo >> wrong_$REF_FILE
+		>&2 echo "Expected output:" >> wrong_$REF_FILE
+		>&2 cat $REF_FILE >> wrong_$REF_FILE
+		>&2 echo >> wrong_$REF_FILE
 
-		echo "Your output:" >> wrong_$REF_FILE
-		cat /tmp/progtester/myout >> wrong_$REF_FILE
+		>&2 echo "Your output:" >> wrong_$REF_FILE
+		>&2 cat /tmp/progtester/myout >> wrong_$REF_FILE
 
-		echo -e "    ${YELLOW}> see wrong_$REF_FILE${NC}"
+		>&2 echo -e "    ${YELLOW}> see wrong_$REF_FILE${NC}"
 	else
 		echo -e "${GREEN}OK: ${NC}$IN_FILE"
 		SUCCESS=$((SUCCESS+1))

@@ -31,6 +31,7 @@ QUIET=0
 WRONGOUTDIR=0
 TIMEOUT=0
 OUTPUT='/tmp/progtester/tester'
+SORTOUTPUT=0
 
 SUCCESS=0
 FAIL=0
@@ -106,6 +107,16 @@ do_timeout() {
 	fi
 }
 
+compare_outs() {
+	if [[ $SORTOUTPUT == 1 ]]; then
+		cat $REF_FILE | sort > /tmp/progtester/sortedRef
+		cat /tmp/progtester/myout | sort > /tmp/progtester/sortedMyOut
+		diff /tmp/progtester/sortedRef /tmp/progtester/sortedMyOut > /dev/null
+	else
+		diff $REF_FILE /tmp/progtester/myout > /dev/null
+	fi
+}
+
 test_code() {
 	if [[ $QUIET -eq 0 ]]; then
 		echo -e "${YELLOW}Testing...${NC}"
@@ -121,7 +132,7 @@ test_code() {
 				((FAIL++))
 			echo -e "    ${YELLOW}> killed after $TIMEOUT seconds${NC}"
 		else
-			if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
+			if ! compare_outs; then
 
 				if [[ $QUIET -eq 0 ]]; then
 					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
@@ -165,7 +176,7 @@ print_stats() {
 	fi
 }
 
-while getopts ":hs:t:qvw:k:o:" OPT; do
+while getopts ":hs:t:qvw:k:o:u" OPT; do
 	case $OPT in
 		h)	echo_help
 			;;
@@ -182,6 +193,8 @@ while getopts ":hs:t:qvw:k:o:" OPT; do
 		k)	TIMEOUT=$OPTARG
 			;;
 		o)	OUTPUT=./$OPTARG
+			;;
+		u)	SORTOUTPUT=1
 			;;
 	esac
 done

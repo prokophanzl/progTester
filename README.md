@@ -18,6 +18,7 @@
  | `-w <wrongouts-dir>` | `--wrongouts <wrongouts-dir>` | specifikuje složku, kam se uloží chybné výstupy programu (defaultně chybné výstupy neukládá) |
  | `-k <seconds>` | `--killafter <seconds>` | čas (ve vteřinách), po kterém se jednotlivý běh ukončí (defaultně 0, tj. běh není časově omezen) |
  | `-o <output>` | `--output <output>` | soubor, kam se má uložit zkompilovaný program (defaultně se neukládá) |
+ | `-u` | `--unsorted-output` | výstupy mohou být v libovolném pořadí (defaultně vypnuto) |
 
 ## Exit codes
  | exit code | význam |

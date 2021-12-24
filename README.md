@@ -12,6 +12,6 @@
  |---|---|
  | 0 | program proběhl úspěšně |
  | 1 | chyba při kompilaci |
- | 2 | výstup se neshoduje s referenčním |
+ | 2 | výstup se neshoduje s referenčním nebo došlo k timeoutu |
  | 3 | zdrojový kód programu nebyl specifikovaný nebo neexistuje |
  | 4 | testovací data nejsou složka |

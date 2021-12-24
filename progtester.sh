@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.3.1'
+VERSION='0.4.0'
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -30,6 +30,7 @@ DIR=testdata
 QUIET=0
 WRONGOUTDIR=0
 TIMEOUT=0
+OUTPUT=/tmp/progtester/tester
 
 SUCCESS=0
 FAIL=0
@@ -62,6 +63,8 @@ echo_help() {
 	echo -e             "              ${BLUE}-k <seconds>${NC} or ${BLUE}--killafter <seconds>${NC} to specify a timeout"
 	echo                "                 (in seconds) after which the program is killed. 0 for no"
 	echo                "                 timeout (default)"
+	echo -e             "              ${BLUE}-o <output>${NC} or ${BLUE}--output <output>${NC} to specify where to save the"
+	echo                "                 output file"
 	echo
 	echo    "Copyright (C) 2021 Prokop Hanzl"
 	echo    "This program is free software: you can redistribute it and/or modify it under"
@@ -74,7 +77,7 @@ compile_code() {
 		echo -e "${YELLOW}Compiling...${NC}"
 	fi
 
-	if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o /tmp/progtester/tester; then
+	if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o $OUTPUT; then
 		>&2 echo -e "${RED}Error compiling.${NC}"
 		rm -r /tmp/progtester
 		exit 1
@@ -88,7 +91,7 @@ test_code() {
 	for IN_FILE in "$DIR"/*_in.txt; do
 		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
 		
-		gtimeout $TIMEOUT /tmp/progtester/tester < $IN_FILE > /tmp/progtester/myout
+		gtimeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
 		if [ $? -eq 124 ]; then
 			if [[ $QUIET -eq 0 ]]; then
 					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
@@ -140,7 +143,7 @@ print_stats() {
 	fi
 }
 
-while getopts ":hs:t:qvw:k:" OPT; do
+while getopts ":hs:t:qvw:k:o:" OPT; do
 	case $OPT in
 		h)	echo_help
 			;;
@@ -156,6 +159,8 @@ while getopts ":hs:t:qvw:k:" OPT; do
 			;;
 		k)	TIMEOUT="$OPTARG"
 			echo $TIMEOUT
+			;;
+		o)	OUTPUT="./$OPTARG"
 			;;
 	esac
 done

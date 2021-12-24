@@ -7,6 +7,18 @@
 ## Doporučení
  Dobrým nápadem je přidat do PATH nějakou složku, kde si uděláte softlink na původní skript, který budete mít uložený v repozitáři, který si naklonujete.
 
+## Přepínače
+ | přepínač | dlouhá verze | význam |
+ |---|---|---|
+ | `-h` | `--help` | zobrazí help screen |
+ | `-s <source-code>` | `--source <source-code>` | specifikuje zdrojový kód (povinný) |
+ | `-t <testdata-dir>` | `--testdata <testdata-dir>` | specifikuje složku s testovacími daty (defaultně předpokládá jméno `testdata`) |
+ | `-v` | `--verbose` | vypíše všechno (default) |
+ | `-q` | `--quiet` | vypíše pouze errory/varování u kopilace a výsledek programu |
+ | `-w <wrongouts-dir>` | `--wrongouts <wrongouts-dir>` | specifikuje složku, kam se uloží chybné výstupy programu (defaultně chybné výstupy neukládá) |
+ | `-k <seconds>` | `--killafter <seconds>` | čas (ve vteřinách), po kterém se jednotlivý běh ukončí (defaultně 0, tj. běh není časově omezen) |
+ | `-o <output>` | `--output <output>` | soubor, kam se má uložit zkompilovaný program (defaultně se neukládá) |
+
 ## Exit codes
  | exit code | význam |
  |---|---|

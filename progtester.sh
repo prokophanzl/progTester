@@ -47,10 +47,11 @@ test_inputs() {
 
 echo_help() {
 	echo -e "${BLUE}              progTester v$VERSION${NC} by ${BOLD}Prokop Hanzl${NC}"
-	echo -e "${BOLD}       usage:${NC} progtester -s <source-code> -t <testdata-dir>"
+	echo -e "${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q]"
+	echo                "                         [-w <wrongouts-dir>] [-k <seconds>] [-o <output>]"
 	echo -e "${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}"
-	echo -e "${BOLD}dependencies:${NC} GNU coreutils"
-	echo           "              on macOS: brew install coreutils"
+	echo -e "${BOLD}dependencies:${NC} GNU coreutils - on macOS: brew install coreutils"
+	echo                "              g++ (g++-11 on macOS - brew install g++)"
 	echo -e "${BOLD}     options:${NC} ${BLUE}-h${NC} or ${BLUE}--help${NC} to show this screen"
 	echo -e             "              ${BLUE}-s <source-code>${NC} or ${BLUE}--source <source-code>${NC} to specify the source"
 	echo                "                 code file (required)"
@@ -69,6 +70,10 @@ echo_help() {
 	echo -e "${BOLD}Copyright (C) 2021 Prokop Hanzl${NC}"
 	echo    "This program is free software: you can redistribute it and/or modify it under"
 	echo    "the terms of the GNU General Public License, version 3."
+	echo
+	echo -e "This program is made and maintained by ${BOLD}Prokop Hanzl${NC} at"
+	echo -e "${GREEN}https://github.com/ProkopHanzl/progTester${NC}. Feel free to request features and"
+	echo    "report bugs in the repository."
 	exit 0
 }
 

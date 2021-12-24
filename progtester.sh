@@ -158,7 +158,6 @@ while getopts ":hs:t:qvw:k:o:" OPT; do
 		w)	WRONGOUTDIR="$OPTARG"
 			;;
 		k)	TIMEOUT="$OPTARG"
-			echo $TIMEOUT
 			;;
 		o)	OUTPUT="./$OPTARG"
 			;;

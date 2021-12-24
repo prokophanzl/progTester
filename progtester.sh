@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.5.0'
+VERSION='0.5.1'
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -37,11 +37,20 @@ SUCCESS=0
 FAIL=0
 
 test_inputs() {
+	if [[ $OSTYPE == 'darwin'* ]]; then
+		if ! [[ -x "$(command -v g++-11)" ]]; then
+			echo -e "${RED}Error: g++-11 not installed.${NC} Try brew install g++."
+			exit 5
+		elif ! [[ -x "$(command -v gtimeout)" ]]; then
+			echo -e "${RED}Error: coreutils not installed.${NC} Try brew install coreutils."
+			exit 5
+		fi
+	fi
 	if [[ ! -f "$PROG" ]]; then
-		echo -e "${RED}Error: please specify valid source file."
+		echo -e "${RED}Error: please specify valid source file.${NC}"
 		exit 3
 	elif [[ ! -d "$DIR" ]]; then
-		echo -e "${RED}Error: invalid test data directory."
+		echo -e "${RED}Error: invalid test data directory.${NC}"
 		exit 4
 	fi
 }

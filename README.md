@@ -19,6 +19,7 @@
  | `-k <seconds>` | `--killafter <seconds>` | čas (ve vteřinách), po kterém se jednotlivý běh ukončí (defaultně 0, tj. běh není časově omezen) |
  | `-o <output>` | `--output <output>` | soubor, kam se má uložit zkompilovaný program (defaultně se neukládá) |
  | `-u` | `--unsorted-output` | výstupy mohou být v libovolném pořadí (defaultně vypnuto) |
+ | `-c` | `--clock` | vypíše čas běhu programu pro jednotlivé vstupy (defaultně vypnuto) |
 
 ## Exit codes
  | exit code | význam |

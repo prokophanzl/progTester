@@ -18,9 +18,6 @@
 
 VERSION='0.1.0'
 
-PROG=$1
-DIR=$2
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -28,71 +25,125 @@ BLUE='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
+PROG=0
+DIR=testdata
+QUIET=0
+WRONGOUTDIR=0
+
 SUCCESS=0
 FAIL=0
 
+test_inputs() {
+	if [[ ! -f "$PROG" ]]; then
+		echo -e "${RED}Error: please specify valid source file."
+		exit 3
+	elif [[ ! -d "$DIR" ]]; then
+		echo -e "${RED}Error: invalid test data directory."
+		exit 4
+	# elif [[ "$WRONGOUTDIR" != 0 ]] && [[ -d "$WRONGOUTDIR" ]]; then
+	# 	echo -e "${RED}Error: wrong output data directory already exists."
+	# 	exit 4
+	fi
+}
+
 echo_help() {
 	echo -e "${BLUE}              progTester v$VERSION${NC} by ${BOLD}Prokop Hanzl${NC}"
-	echo -e "${BOLD}       usage:${NC} progtester <source-code> <testdata-dir>"
+	echo -e "${BOLD}       usage:${NC} progtester -s <source-code> -t <testdata-dir>"
 	echo -e "${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}"
 	echo -e "${BOLD}dependencies:${NC} GNU coreutils"
 	echo           "              on macOS: brew install coreutils"
-	echo -e "${BOLD}     options:${NC} --help or -h to show this screen"
+	echo -e "${BOLD}     options:${NC} ${BLUE}-h${NC} or ${BLUE}--help${NC} to show this screen"
+	echo -e             "              ${BLUE}-s <source-code>${NC} or ${BLUE}--source <source-code>${NC} to specify the source"
+	echo                "                 code file (required)"
+	echo -e             "              ${BLUE}-t <testdata-dir>${NC} or ${BLUE}--testdata <testdata-dir>${NC} to specify the test"
+	echo                "                 data directory (default: testdata/)"
+	echo -e             "              ${BLUE}-v${NC} or ${BLUE}--verbose${NC} to run in verbose mode (default)"
+	echo -e             "              ${BLUE}-q${NC} or ${BLUE}--quiet${NC} to run in quiet mode"
+	echo -e             "              ${BLUE}-w <wrongouts-dir>${NC} or ${BLUE}--wrongouts <wrongouts-dir>${NC} to specify a"
+	echo                "                 directory for wrong outputs"
 	exit 0
 }
 
 compile_code() {
-	echo -e "${YELLOW}Compiling...${NC}"
-	if ! g++-11 $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -o /tmp/progtester/tester; then
+	if [[ $QUIET -eq 0 ]]; then
+		echo -e "${YELLOW}Compiling...${NC}"
+	fi
+
+	if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o /tmp/progtester/tester; then
 		>&2 echo -e "${RED}Error compiling.${NC}"
 		rm -r /tmp/progtester
 		exit 1
 	fi
-	echo
-}
-
-print_stats() {
-	TOTAL=$(($FAIL+$SUCCESS))
-	echo
-	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
 }
 
 test_code() {
-	echo -e "${YELLOW}Testing...${NC}"
+	if [[ $QUIET -eq 0 ]]; then
+		echo -e "${YELLOW}Testing...${NC}"
+	fi
 	for IN_FILE in "$DIR"/*_in.txt; do
 		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
 		/tmp/progtester/tester < $IN_FILE > /tmp/progtester/myout
 		if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
-			>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
+
+			if [[ $QUIET -eq 0 ]]; then
+				>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
+			fi
 			FAIL=$((FAIL+1))
 
-			mkdir -p wrong_testdata
+			if [[ "$WRONGOUTDIR" != 0 ]]; then
+				mkdir -p "$WRONGOUTDIR"
 
-			>&2 echo "Input:" >> wrong_$REF_FILE
-			>&2 cat $IN_FILE >> wrong_$REF_FILE
-			>&2 echo >> wrong_$REF_FILE
-			
-			>&2 echo "Expected output:" >> wrong_$REF_FILE
-			>&2 cat $REF_FILE >> wrong_$REF_FILE
-			>&2 echo >> wrong_$REF_FILE
+				SHORTREF="${REF_FILE//$DIR/}"
+				>&2 echo "Input:" > "$WRONGOUTDIR$SHORTREF"
+				>&2 cat $IN_FILE >> "$WRONGOUTDIR$SHORTREF"
+				>&2 echo >> "$WRONGOUTDIR$SHORTREF"
+				
+				>&2 echo "Expected output:" >> "$WRONGOUTDIR$SHORTREF"
+				>&2 cat $REF_FILE >> "$WRONGOUTDIR$SHORTREF"
+				>&2 echo >> "$WRONGOUTDIR$SHORTREF"
 
-			>&2 echo "Your output:" >> wrong_$REF_FILE
-			>&2 cat /tmp/progtester/myout >> wrong_$REF_FILE
+				>&2 echo "Your output:" >> "$WRONGOUTDIR$SHORTREF"
+				>&2 cat /tmp/progtester/myout >> "$WRONGOUTDIR$SHORTREF"
 
-			>&2 echo -e "    ${YELLOW}> see wrong_$REF_FILE${NC}"
+				if [[ $QUIET -eq 0 ]]; then
+					>&2 echo -e "    ${YELLOW}> see $WRONGOUTDIR$SHORTREF${NC}"
+				fi
+			fi
 		else
-			echo -e "${GREEN}OK: ${NC}$IN_FILE"
+			if [[ $QUIET -eq 0 ]]; then
+				echo -e "${GREEN}OK: ${NC}$IN_FILE"
+			fi
 			SUCCESS=$((SUCCESS+1))
 		fi
 	done
 }
 
-while getopts "h" OPT; do
+print_stats() {
+	TOTAL=$(($FAIL+$SUCCESS))
+	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
+	if [[ $QUIET -eq 1 ]] && [[ $WRONGOUTDIR != 0 ]]; then
+		echo -e "${YELLOW}See $WRONGOUTDIR$SHORTREF for wrong output data${NC}"
+	fi
+}
+
+while getopts ":hs:t:qvw:" OPT; do
 	case $OPT in
 		h)	echo_help
 			;;
+		s)	PROG="$OPTARG"
+			;;
+		t)	DIR="$OPTARG"
+			;;
+		q)	QUIET=1
+			;;
+		v)	QUIET=0
+			;;
+		w)	WRONGOUTDIR="$OPTARG"
+			;;
 	esac
 done
+
+test_inputs
 
 mkdir -p /tmp/progtester
 
@@ -102,7 +153,7 @@ print_stats
 
 rm -r /tmp/progtester
 
-if [ $TOTAL -eq $SUCCESS ]; then
+if [[ $TOTAL -eq $SUCCESS ]]; then
 	exit 0
 else
 	exit 2

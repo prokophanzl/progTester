@@ -38,6 +38,52 @@ echo_help() {
 	exit 0
 }
 
+compile_code() {
+	echo -e "${YELLOW}Compiling...${NC}"
+	if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o /tmp/progtester/tester; then
+		>&2 echo -e "${RED}Error compiling.${NC}"
+		rm -r /tmp/progtester
+		exit 1
+	fi
+	echo
+}
+
+print_stats() {
+	TOTAL=$(($FAIL+$SUCCESS))
+	echo
+	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
+}
+
+test_code() {
+	echo -e "${YELLOW}Testing...${NC}"
+	for IN_FILE in "$DIR"/*_in.txt; do
+		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
+		/tmp/progtester/tester < $IN_FILE > /tmp/progtester/myout
+		if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
+			>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
+			FAIL=$((FAIL+1))
+
+			mkdir -p wrong_testdata
+
+			>&2 echo "Input:" >> wrong_$REF_FILE
+			>&2 cat $IN_FILE >> wrong_$REF_FILE
+			>&2 echo >> wrong_$REF_FILE
+			
+			>&2 echo "Expected output:" >> wrong_$REF_FILE
+			>&2 cat $REF_FILE >> wrong_$REF_FILE
+			>&2 echo >> wrong_$REF_FILE
+
+			>&2 echo "Your output:" >> wrong_$REF_FILE
+			>&2 cat /tmp/progtester/myout >> wrong_$REF_FILE
+
+			>&2 echo -e "    ${YELLOW}> see wrong_$REF_FILE${NC}"
+		else
+			echo -e "${GREEN}OK: ${NC}$IN_FILE"
+			SUCCESS=$((SUCCESS+1))
+		fi
+	done
+}
+
 while getopts "h" OPT; do
 	case $OPT in
 		h)	echo_help
@@ -47,45 +93,9 @@ done
 
 mkdir -p /tmp/progtester
 
-echo -e "${YELLOW}Compiling...${NC}"
-if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o /tmp/progtester/tester; then
-	>&2 echo -e "${RED}Error compiling.${NC}"
-	rm -r /tmp/progtester
-	exit 1
-fi
-echo
-
-echo -e "${YELLOW}Testing...${NC}"
-for IN_FILE in "$DIR"/*_in.txt; do
-	REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
-	/tmp/progtester/tester < $IN_FILE > /tmp/progtester/myout
-	if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
-		>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
-		FAIL=$((FAIL+1))
-
-		mkdir -p wrong_testdata
-
-		>&2 echo "Input:" >> wrong_$REF_FILE
-		>&2 cat $IN_FILE >> wrong_$REF_FILE
-		>&2 echo >> wrong_$REF_FILE
-		
-		>&2 echo "Expected output:" >> wrong_$REF_FILE
-		>&2 cat $REF_FILE >> wrong_$REF_FILE
-		>&2 echo >> wrong_$REF_FILE
-
-		>&2 echo "Your output:" >> wrong_$REF_FILE
-		>&2 cat /tmp/progtester/myout >> wrong_$REF_FILE
-
-		>&2 echo -e "    ${YELLOW}> see wrong_$REF_FILE${NC}"
-	else
-		echo -e "${GREEN}OK: ${NC}$IN_FILE"
-		SUCCESS=$((SUCCESS+1))
-	fi
-done
-
-TOTAL=$(($FAIL+$SUCCESS))
-echo
-echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
+compile_code
+test_code
+print_stats
 
 rm -r /tmp/progtester
 

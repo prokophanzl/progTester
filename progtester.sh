@@ -71,3 +71,5 @@ echo
 echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
 
 rm -r /tmp/progtester
+
+exit 0

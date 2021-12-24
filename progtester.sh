@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.1.0'
+VERSION='0.2.0'
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -40,9 +40,6 @@ test_inputs() {
 	elif [[ ! -d "$DIR" ]]; then
 		echo -e "${RED}Error: invalid test data directory."
 		exit 4
-	# elif [[ "$WRONGOUTDIR" != 0 ]] && [[ -d "$WRONGOUTDIR" ]]; then
-	# 	echo -e "${RED}Error: wrong output data directory already exists."
-	# 	exit 4
 	fi
 }
 

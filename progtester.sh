@@ -33,7 +33,7 @@ mkdir -p /tmp/progtester
 echo -e "${YELLOW}Compiling...${NC}"
 if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o /tmp/progtester/tester; then
 	echo -e "${RED}Error compiling.${NC}"
-	rm -r progtester
+	rm -r /tmp/progtester
 	exit 1
 fi
 echo

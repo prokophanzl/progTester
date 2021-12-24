@@ -42,7 +42,7 @@ echo_help() {
 
 compile_code() {
 	echo -e "${YELLOW}Compiling...${NC}"
-	if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o /tmp/progtester/tester; then
+	if ! g++-11 $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -o /tmp/progtester/tester; then
 		>&2 echo -e "${RED}Error compiling.${NC}"
 		rm -r /tmp/progtester
 		exit 1

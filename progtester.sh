@@ -29,6 +29,7 @@ PROG=0
 DIR=testdata
 QUIET=0
 WRONGOUTDIR=0
+TIMEOUT=0
 
 SUCCESS=0
 FAIL=0
@@ -58,6 +59,9 @@ echo_help() {
 	echo -e             "              ${BLUE}-q${NC} or ${BLUE}--quiet${NC} to run in quiet mode"
 	echo -e             "              ${BLUE}-w <wrongouts-dir>${NC} or ${BLUE}--wrongouts <wrongouts-dir>${NC} to specify a"
 	echo                "                 directory for wrong outputs"
+	echo -e             "              ${BLUE}-k <seconds>${NC} or ${BLUE}--killafter <seconds>${NC} to specify a timeout"
+	echo                "                 (in seconds) after which the program is killed. 0 for no"
+	echo                "                 timeout (default)"
 	exit 0
 }
 
@@ -79,38 +83,47 @@ test_code() {
 	fi
 	for IN_FILE in "$DIR"/*_in.txt; do
 		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
-		/tmp/progtester/tester < $IN_FILE > /tmp/progtester/myout
-		if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
-
+		
+		gtimeout $TIMEOUT /tmp/progtester/tester < $IN_FILE > /tmp/progtester/myout
+		if [ $? -eq 124 ]; then
 			if [[ $QUIET -eq 0 ]]; then
-				>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
-			fi
-			FAIL=$((FAIL+1))
-
-			if [[ "$WRONGOUTDIR" != 0 ]]; then
-				mkdir -p "$WRONGOUTDIR"
-
-				SHORTREF="${REF_FILE//$DIR/}"
-				>&2 echo "Input:" > "$WRONGOUTDIR$SHORTREF"
-				>&2 cat $IN_FILE >> "$WRONGOUTDIR$SHORTREF"
-				>&2 echo >> "$WRONGOUTDIR$SHORTREF"
-				
-				>&2 echo "Expected output:" >> "$WRONGOUTDIR$SHORTREF"
-				>&2 cat $REF_FILE >> "$WRONGOUTDIR$SHORTREF"
-				>&2 echo >> "$WRONGOUTDIR$SHORTREF"
-
-				>&2 echo "Your output:" >> "$WRONGOUTDIR$SHORTREF"
-				>&2 cat /tmp/progtester/myout >> "$WRONGOUTDIR$SHORTREF"
+					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
+				fi
+				FAIL=$((FAIL+1))
+			echo -e "    ${YELLOW}> killed after $TIMEOUT seconds${NC}"
+		else
+			if ! diff $REF_FILE /tmp/progtester/myout > /dev/null; then
 
 				if [[ $QUIET -eq 0 ]]; then
-					>&2 echo -e "    ${YELLOW}> see $WRONGOUTDIR$SHORTREF${NC}"
+					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
 				fi
+				FAIL=$((FAIL+1))
+
+				if [[ "$WRONGOUTDIR" != 0 ]]; then
+					mkdir -p "$WRONGOUTDIR"
+
+					SHORTREF="${REF_FILE//$DIR/}"
+					>&2 echo "Input:" > "$WRONGOUTDIR$SHORTREF"
+					>&2 cat $IN_FILE >> "$WRONGOUTDIR$SHORTREF"
+					>&2 echo >> "$WRONGOUTDIR$SHORTREF"
+					
+					>&2 echo "Expected output:" >> "$WRONGOUTDIR$SHORTREF"
+					>&2 cat $REF_FILE >> "$WRONGOUTDIR$SHORTREF"
+					>&2 echo >> "$WRONGOUTDIR$SHORTREF"
+
+					>&2 echo "Your output:" >> "$WRONGOUTDIR$SHORTREF"
+					>&2 cat /tmp/progtester/myout >> "$WRONGOUTDIR$SHORTREF"
+
+					if [[ $QUIET -eq 0 ]]; then
+						>&2 echo -e "    ${YELLOW}> see $WRONGOUTDIR$SHORTREF${NC}"
+					fi
+				fi
+			else
+				if [[ $QUIET -eq 0 ]]; then
+					echo -e "${GREEN}OK: ${NC}$IN_FILE"
+				fi
+				SUCCESS=$((SUCCESS+1))
 			fi
-		else
-			if [[ $QUIET -eq 0 ]]; then
-				echo -e "${GREEN}OK: ${NC}$IN_FILE"
-			fi
-			SUCCESS=$((SUCCESS+1))
 		fi
 	done
 }
@@ -123,7 +136,7 @@ print_stats() {
 	fi
 }
 
-while getopts ":hs:t:qvw:" OPT; do
+while getopts ":hs:t:qvw:k:" OPT; do
 	case $OPT in
 		h)	echo_help
 			;;
@@ -136,6 +149,9 @@ while getopts ":hs:t:qvw:" OPT; do
 		v)	QUIET=0
 			;;
 		w)	WRONGOUTDIR="$OPTARG"
+			;;
+		k)	TIMEOUT="$OPTARG"
+			echo $TIMEOUT
 			;;
 	esac
 done

@@ -46,7 +46,7 @@ test_inputs() {
 }
 
 echo_help() {
-	echo -e "${BLUE}              progTester v$VERSION${NC} by ${BOLD}Prokop Hanzl${NC}"
+	echo -e "${BLUE}${BOLD}              progTester v$VERSION${NC} ${BOLD}by Prokop Hanzl${NC}"
 	echo -e "${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q]"
 	echo                "                         [-w <wrongouts-dir>] [-k <seconds>] [-o <output>]"
 	echo -e "${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}"
@@ -71,7 +71,7 @@ echo_help() {
 	echo    "This program is free software: you can redistribute it and/or modify it under"
 	echo    "the terms of the GNU General Public License, version 3."
 	echo
-	echo -e "This program is made and maintained by ${BOLD}Prokop Hanzl${NC} at"
+	echo -e "This script is made and maintained by ${BOLD}Prokop Hanzl${NC} at"
 	echo -e "${GREEN}https://github.com/ProkopHanzl/progTester${NC}. Feel free to request features and"
 	echo    "report bugs in the repository."
 	exit 0

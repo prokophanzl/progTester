@@ -30,3 +30,4 @@
  | 3 | zdrojový kód programu nebyl specifikovaný nebo neexistuje |
  | 4 | testovací data nejsou složka |
  | 5 | chybějící dependencies |
+ | 6 | `-k` nedostal platné číslo |

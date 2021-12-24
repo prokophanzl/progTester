@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.5.1'
+VERSION='0.6.0'
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -43,6 +43,7 @@ SUCCESS=0
 FAIL=0
 
 test_inputs() {
+	VALIDNUMBER='^[0-9]+([.][0-9]+)?$'
 	if [[ $OSTYPE == 'darwin'* ]]; then
 		if ! [[ -x "$(command -v g++-11)" ]]; then
 			echo -e "${RED}Error: g++-11 not installed.${NC} Try brew install g++."
@@ -58,6 +59,9 @@ test_inputs() {
 	elif [[ ! -d "$DIR" ]]; then
 		echo -e "${RED}Error: invalid test data directory.${NC}"
 		exit 4
+	elif ! [[ $TIMEOUT =~ $VALIDNUMBER ]]; then
+		echo -e "${RED}Error: timeout is not a number.${NC}"
+		exit 6
 	fi
 }
 

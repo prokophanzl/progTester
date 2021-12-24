@@ -67,6 +67,7 @@ echo_help() {
 	echo                "                 timeout (default)"
 	echo -e             "              ${BLUE}-o <output>${NC} or ${BLUE}--output <output>${NC} to specify where to save the"
 	echo                "                 output file"
+	echo -e             "              ${BLUE}-u${NC} or ${BLUE}--unsorted-output${NC} to allow outputs to be in any order"
 	echo
 	echo -e "${BOLD}Copyright (C) 2021 Prokop Hanzl${NC}"
 	echo    "This program is free software: you can redistribute it and/or modify it under"

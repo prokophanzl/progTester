@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.4.0'
+VERSION='0.4.1'
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -30,7 +30,7 @@ DIR=testdata
 QUIET=0
 WRONGOUTDIR=0
 TIMEOUT=0
-OUTPUT=/tmp/progtester/tester
+OUTPUT='/tmp/progtester/tester'
 
 SUCCESS=0
 FAIL=0
@@ -66,10 +66,14 @@ echo_help() {
 	echo -e             "              ${BLUE}-o <output>${NC} or ${BLUE}--output <output>${NC} to specify where to save the"
 	echo                "                 output file"
 	echo
-	echo    "Copyright (C) 2021 Prokop Hanzl"
+	echo -e "${BOLD}Copyright (C) 2021 Prokop Hanzl${NC}"
 	echo    "This program is free software: you can redistribute it and/or modify it under"
 	echo    "the terms of the GNU General Public License, version 3."
 	exit 0
+}
+
+cleanup() {
+	rm -r /tmp/progtester
 }
 
 compile_code() {
@@ -77,10 +81,23 @@ compile_code() {
 		echo -e "${YELLOW}Compiling...${NC}"
 	fi
 
-	if ! g++ $PROG -Wall -pedantic -O2 -fsanitize=address -Wextra -Wno-deprecated -o $OUTPUT; then
+	COMPILER=g++
+	if [[ $OSTYPE == 'darwin'* ]]; then
+		COMPILER=g++-11
+	fi
+
+	if ! $COMPILER "$PROG" -Wall -pedantic -O2 -o "$OUTPUT"; then
 		>&2 echo -e "${RED}Error compiling.${NC}"
-		rm -r /tmp/progtester
+		cleanup
 		exit 1
+	fi
+}
+
+do_timeout() {
+	if [[ $OSTYPE == 'darwin'* ]]; then
+		gtimeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
+	else
+		timeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
 	fi
 }
 
@@ -91,7 +108,7 @@ test_code() {
 	for IN_FILE in "$DIR"/*_in.txt; do
 		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
 		
-		gtimeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
+		do_timeout
 		if [ $? -eq 124 ]; then
 			if [[ $QUIET -eq 0 ]]; then
 					>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
@@ -147,19 +164,19 @@ while getopts ":hs:t:qvw:k:o:" OPT; do
 	case $OPT in
 		h)	echo_help
 			;;
-		s)	PROG="$OPTARG"
+		s)	PROG=$OPTARG
 			;;
-		t)	DIR="$OPTARG"
+		t)	DIR=$OPTARG
 			;;
 		q)	QUIET=1
 			;;
 		v)	QUIET=0
 			;;
-		w)	WRONGOUTDIR="$OPTARG"
+		w)	WRONGOUTDIR=$OPTARG
 			;;
-		k)	TIMEOUT="$OPTARG"
+		k)	TIMEOUT=$OPTARG
 			;;
-		o)	OUTPUT="./$OPTARG"
+		o)	OUTPUT=./$OPTARG
 			;;
 	esac
 done
@@ -172,7 +189,7 @@ compile_code
 test_code
 print_stats
 
-rm -r /tmp/progtester
+cleanup
 
 if [[ $TOTAL -eq $SUCCESS ]]; then
 	exit 0

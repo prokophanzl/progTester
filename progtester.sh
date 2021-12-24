@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.3.0'
+VERSION='0.3.1'
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -62,6 +62,10 @@ echo_help() {
 	echo -e             "              ${BLUE}-k <seconds>${NC} or ${BLUE}--killafter <seconds>${NC} to specify a timeout"
 	echo                "                 (in seconds) after which the program is killed. 0 for no"
 	echo                "                 timeout (default)"
+	echo
+	echo    "Copyright (C) 2021 Prokop Hanzl"
+	echo    "This program is free software: you can redistribute it and/or modify it under"
+	echo    "the terms of the GNU General Public License, version 3."
 	exit 0
 }
 

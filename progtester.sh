@@ -32,11 +32,12 @@ SUCCESS=0
 FAIL=0
 
 echo_help() {
-	echo -e "${BLUE}              progTester v$VERSION${NC}"
+	echo -e "${BLUE}              progTester v$VERSION${NC} by ${BOLD}Prokop Hanzl${NC}"
 	echo -e "${BOLD}       usage:${NC} progtester <source-code> <testdata-dir>"
 	echo -e "${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}"
 	echo -e "${BOLD}dependencies:${NC} GNU coreutils"
 	echo           "              on macOS: brew install coreutils"
+	echo -e "${BOLD}     options:${NC} --help or -h to show this screen"
 	exit 0
 }
 

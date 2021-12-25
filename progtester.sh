@@ -29,22 +29,22 @@ BOLD='\033[1m'
 ITALIC='\033[0;03m'
 NC='\033[0m'
 
-PROG=0
-DIR=testdata
-QUIET=0
-WRONGOUTDIR=0
-TIMEOUT=0
-OUTPUT='/tmp/progtester/tester'
-SORTOUTPUT=0
-CLOCK=0
-TOTALTIME=0
+# default values
+PROG=0 # source code
+DIR=testdata # test data directory
+QUIET=0 # quiet mode
+WRONGOUTDIR=0 # wrong output directory
+TIMEOUT=0 # timeout for --kill-after
+OUTPUT='/tmp/progtester/tester' # compiler output
+SORTOUTPUT=0 # --unsorted-output toggle
+CLOCK=0 # --clock toggle
 
-SUCCESS=0
-FAIL=0
+SUCCESS=0 # number of successful runs
+FAIL=0 # number of unsuccessful runs
 
 test_inputs() {
-	VALIDNUMBER='^[0-9]+([.][0-9]+)?$'
-	if [[ $OSTYPE == 'darwin'* ]]; then
+	VALIDNUMBER='^[0-9]+([.][0-9]+)?$' # regex for number with decimal dot
+	if [[ $OSTYPE == 'darwin'* ]]; then # if on macOS, check for dependencies
 		if ! [[ -x "$(command -v g++-11)" ]]; then
 			echo -e "${RED}Error: g++-11 not installed.${NC} Try brew install g++."
 			exit 5
@@ -65,7 +65,7 @@ test_inputs() {
 	fi
 }
 
-echo_help() {
+echo_help() { # displays help screen
 	echo -e "${BLUE}${BOLD}              progTester v$VERSION${NC} ${BOLD}by Prokop Hanzl${NC}"
 	echo -e "${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q]"
 	echo                "                         [-w <wrongouts-dir>] [-k <seconds>] [-o <output>]"
@@ -103,16 +103,14 @@ cleanup() {
 	rm -r /tmp/progtester
 }
 
-compile_code() {
+compile_code() { # compiles code
 	if [[ $QUIET == 0 ]]; then
 		echo -e "${LIGHTYELLOW}Compiling...${NC}"
 	fi
-
 	COMPILER=g++
 	if [[ $OSTYPE == 'darwin'* ]]; then
 		COMPILER=g++-11
 	fi
-
 	if ! $COMPILER "$PROG" -Wall -pedantic -O2 -o "$OUTPUT"; then
 		>&2 echo -e "${RED}Error compiling.${NC}"
 		cleanup
@@ -120,19 +118,19 @@ compile_code() {
 	fi
 }
 
-do_timeout() {
-	TIME1=$(gdate +%s%3N)
-	if [[ $OSTYPE == 'darwin'* ]]; then
+do_timeout() { # handles timeout
+	TIME1=$(gdate +%s%3N) # nanoseconds in Unix time
+	if [[ $OSTYPE == 'darwin'* ]]; then # if on macOS, use gtimeout
 		gtimeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
 	else
 		timeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
 	fi
-	TIMEOUTRET=$?
+	TIMEOUTRET=$? # return value of timeout, 124 means timed out
 	TIME2=$(gdate +%s%3N)
 }
 
-compare_outs() {
-	if [[ $SORTOUTPUT == 1 ]]; then
+compare_outs() { # compares actual output with the reference
+	if [[ $SORTOUTPUT == 1 ]]; then # if --unsorted-output, sort both the reference and actual output before comparing them
 		cat $REF_FILE | sort > /tmp/progtester/sortedRef
 		cat /tmp/progtester/myout | sort > /tmp/progtester/sortedMyOut
 		diff /tmp/progtester/sortedRef /tmp/progtester/sortedMyOut > /dev/null
@@ -141,20 +139,19 @@ compare_outs() {
 	fi
 }
 
-print_time() {
+print_time() { # helper for --clock
 	MS="000$1"
 	>&2 echo -e "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
 }
 
-test_code() {
+test_code() { # runs the tests
 	if [[ $QUIET == 0 ]]; then
 		echo -e "${LIGHTYELLOW}Testing...${NC}"
 	fi
-	for IN_FILE in "$DIR"/*_in.txt; do
-		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'`
-		
+	for IN_FILE in "$DIR"/*_in.txt; do # for each input file in test data directory
+		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'` # find the reference output counterpart
 		do_timeout
-		if [ $TIMEOUTRET == 124 ]; then
+		if [ $TIMEOUTRET == 124 ]; then # if timed out 
 			if [[ $QUIET == 0 ]]; then
 				>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
 				>&2 echo -e "    ${GRAY}> ${YELLOW}killed after ${PURPLE}${TIMEOUT}s${NC}"
@@ -162,39 +159,31 @@ test_code() {
 			((FAIL++))
 		else
 			if ! compare_outs; then
-
 				if [[ $QUIET == 0 ]]; then
 					>&2 echo -e "${RED}${BOLD}FAIL: ${NC}${BOLD}$IN_FILE${NC}"
 				fi
 				((FAIL++))
-
-				if [[ "$WRONGOUTDIR" != 0 ]]; then
+				if [[ "$WRONGOUTDIR" != 0 ]]; then 
 					mkdir -p "$WRONGOUTDIR"
-
-					SHORTREF="${REF_FILE//$DIR/}"
+					SHORTREF="${REF_FILE//$DIR/}" # just the file name without the directory
 					>&2 echo "Input:" > "$WRONGOUTDIR$SHORTREF"
 					>&2 cat $IN_FILE >> "$WRONGOUTDIR$SHORTREF"
 					>&2 echo >> "$WRONGOUTDIR$SHORTREF"
-					
 					>&2 echo "Expected output:" >> "$WRONGOUTDIR$SHORTREF"
 					>&2 cat $REF_FILE >> "$WRONGOUTDIR$SHORTREF"
 					>&2 echo >> "$WRONGOUTDIR$SHORTREF"
-
 					>&2 echo "Your output:" >> "$WRONGOUTDIR$SHORTREF"
 					>&2 cat /tmp/progtester/myout >> "$WRONGOUTDIR$SHORTREF"
-
 					if [[ $QUIET == 0 ]]; then
 						>&2 echo -e "    ${GRAY}> see ${PURPLE}$WRONGOUTDIR$SHORTREF${NC}"
 					fi
 				fi
-
 			else
 				if [[ $QUIET == 0 ]]; then
 					echo -e "${GREEN}${BOLD}OK: ${NC}${BOLD}$IN_FILE${NC}"
 				fi
 				((SUCCESS++))
 			fi
-
 			if [[ $QUIET == 0 ]] && [[ $CLOCK == 1 ]]; then
 				print_time $((TIME2-$TIME1))
 			fi
@@ -202,7 +191,7 @@ test_code() {
 	done
 }
 
-print_stats() {
+print_stats() { # prints stats about successful/unsuccessful runs
 	TOTAL=$(($FAIL+$SUCCESS))
 	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
 	if [[ $QUIET == 1 ]] && [[ $WRONGOUTDIR != 0 ]]; then
@@ -236,13 +225,10 @@ while getopts ":hs:t:qvw:k:o:uc" OPT; do
 done
 
 test_inputs
-
 mkdir -p /tmp/progtester
-
 compile_code
 test_code
 print_stats
-
 cleanup
 
 if [[ $TOTAL == $SUCCESS ]]; then

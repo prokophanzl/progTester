@@ -174,7 +174,7 @@ test_code() { # runs the tests
 	initialize_success_vars
 	vecho "${LIGHTYELLOW}Testing...${NC}"
 	for IN_FILE in "$DIR"/*_in.txt; do # for each input file in test data directory
-		REF_FILE=$(echo -n "$IN_FILE" | sed -e 's/_in\(.*\)$/_out\1/') # find the reference output counterpart
+		REF_FILE=${IN_FILE/_in/_out} # find the reference output counterpart
 		if do_timeout; then # if timed out 
 			>&2 vecho "${RED}FAIL: ${NC}$IN_FILE"
 			>&2 vecho "    ${GRAY}> ${YELLOW}killed after ${PURPLE}${TIMEOUT}s${NC}"

@@ -222,7 +222,7 @@ test_code() { # runs the tests
 			((FAIL++))
 		else
 			if ! compare_outs; then
-				>&2 vecho "${RED}${BOLD}FAIL: ${NC}${BOLD}$IN_FILE${NC}"
+				>&2 vecho "${RED}${BOLD}FAIL: ${NC}${BOLD}${IN_FILE}${NC}"
 				((FAIL++))
 				if [[ "$WRONGOUT_DIR" != 0 ]]; then 
 					mkdir -p "$WRONGOUT_DIR"
@@ -236,11 +236,11 @@ test_code() { # runs the tests
 						echo
 						echo "Your output:"
 						cat /tmp/progtester/myout
-					} > "$WRONGOUT_DIR$SHORTREF"
-					>&2 vecho "    ${GRAY}> see ${PURPLE}$WRONGOUT_DIR$SHORTREF${NC}"
+					} > "${WRONGOUT_DIR}${SHORTREF}"
+					>&2 vecho "    ${GRAY}> see ${PURPLE}${WRONGOUT_DIR}${SHORTREF}${NC}"
 				fi
 			else
-				vecho "${GREEN}${BOLD}OK: ${NC}${BOLD}$IN_FILE${NC}"
+				vecho "${GREEN}${BOLD}OK: ${NC}${BOLD}${IN_FILE}${NC}"
 				((SUCCESS++))
 			fi
 			[[ $CLOCK == 1 ]] && print_time $TIMEDIFF
@@ -250,8 +250,8 @@ test_code() { # runs the tests
 
 print_stats() { # prints stats about successful/unsuccessful runs
 	TOTAL=$((FAIL+SUCCESS))
-	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
-	[[ $WRONGOUT_DIR != 0 ]] && qecho "See ${PURPLE}$WRONGOUT_DIR${NC} for wrong output data"
+	echo -e "${BLUE}${SUCCESS}/${TOTAL}${NC} ($SUCCESS successes and $FAIL failures)"
+	[[ $WRONGOUT_DIR != 0 ]] && qecho "See ${PURPLE}${WRONGOUT_DIR}${NC} for wrong output data"
 }
 
 # ======================== BODY ========================

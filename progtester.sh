@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.6.2'
+VERSION='0.7.0'
 
 # ======================== TEXT FORMATTING PRESETS ========================
 
@@ -30,16 +30,43 @@ GRAY='\033[0;90m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-# ======================== DEFAULT VALUES ========================
+# ======================== FACTORY DEFAULT VALUES ========================
 
 PROG=0 # source code
-DIR=testdata # test data directory
-QUIET=0 # quiet mode
-WRONGOUTDIR=0 # wrong output directory
+
+TESTDATA_DIR=testdata # test data directory
+QUIET_MODE=0 # quiet mode
+WRONGOUT_DIR=0 # wrong output directory
 TIMEOUT=0 # timeout for kill-after
 OUTPUT='/tmp/progtester/tester' # compiler output
-SORTOUTPUT=0 # unsorted-output toggle
+UNSORTED_OUTPUT=0 # unsorted-output toggle
 CLOCK=0 # clock toggle
+
+CONFIGFILE=~/.progtester/progtester.config
+[[ -f $CONFIGFILE ]] && . $CONFIGFILE # if it exists, include user config
+
+# ======================== HELP SCREEN DEFAULTS DISPLAY HELPERS ========================
+
+DEFAULTWORD="${GRAY}(default)${NC}"
+ DEFAULTOFF="${GRAY}default: off${NC}"
+  DEFAULTON="${GRAY}default: on${NC}"
+ DEFAULTON1="${GRAY}default:"
+
+if [[ $QUIET_MODE == 0 ]]; then
+	VERBOSE_DEFAULT=$DEFAULTWORD
+	QUIET_DEFAULT=""
+else
+	VERBOSE_DEFAULT=""
+	QUIET_DEFAULT=$DEFAULTWORD
+fi
+
+[[ $WRONGOUT_DIR    == 0 ]] && WRONGOUT_DIR_DEFAULT=$DEFAULTOFF    || WRONGOUT_DIR_DEFAULT="${DEFAULTON1} ${WRONGOUT_DIR}${NC}"
+[[ $TIMEOUT         == 0 ]] && TIMEOUT_DEFAULT=$DEFAULTOFF         || TIMEOUT_DEFAULT="${DEFAULTON1} ${TIMEOUT} seconds${NC}"
+[[ $UNSORTED_OUTPUT == 0 ]] && UNSORTED_OUTPUT_DEFAULT=$DEFAULTOFF || UNSORTED_OUTPUT_DEFAULT=$DEFAULTON
+[[ $CLOCK           == 0 ]] && CLOCK_DEFAULT=$DEFAULTOFF           || CLOCK_DEFAULT=$DEFAULTON
+
+TESTDATA_DIR_DEFAULT="${DEFAULTON1} ${TESTDATA_DIR}${NC}"
+OUTPUT_DEFAULT="${DEFAULTON1} ${OUTPUT}${NC}"
 
 # ======================== SMALL FUNCTIONS ========================
 
@@ -53,11 +80,11 @@ error() {
 }
 
 vecho() { # verbose echo - echo only in verbose mode
-	[[ $QUIET == 0 ]] && echo -e "$1"
+	[[ $QUIET_MODE == 0 ]] && echo -e "$1"
 }
 
 qecho() { # silent echo - echo only in quiet mode
-	[[ $QUIET == 1 ]] && echo -e "$1"
+	[[ $QUIET_MODE == 1 ]] && echo -e "$1"
 }
 
 # ======================== INPUT CHECKS ========================
@@ -67,7 +94,7 @@ source_valid() {
 }
 
 testdata_valid() {
-	return $([[ -d "$DIR" ]])
+	return $([[ -d "$TESTDATA_DIR" ]])
 }
 
 mac_dependencies_installed() {
@@ -105,22 +132,31 @@ ${BOLD}       flags:${NC} ${BLUE}-h${NC} ${GRAY}// help${NC}
               ${BLUE}-s <source-code>${NC} ${GRAY}// source${NC}
                  to specify the source code file (required)
               ${BLUE}-t <testdata-dir>${NC} ${GRAY}// testdata${NC}
-                 to specify the test data directory (default: testdata/)
+                 to specify the test data directory
+                 $TESTDATA_DIR_DEFAULT
               ${BLUE}-v${NC} ${GRAY}// verbose${NC}
-                 to run in verbose mode (default)
+                 to run in verbose mode $VERBOSE_DEFAULT
               ${BLUE}-q${NC} ${GRAY}// quiet${NC}
-                 to run in quiet mode
+                 to run in quiet mode $QUIET_DEFAULT
               ${BLUE}-w <wrongouts-dir>${NC} ${GRAY}// wrongouts${NC}
                  to specify a directory for wrong outputs
+                 $WRONGOUT_DIR_DEFAULT
               ${BLUE}-k <seconds>${NC} ${GRAY}// kill-after${NC}
                  to specify a timeout (in seconds) after which the program is
-                 killed. 0 for no timeout (default)
+                 killed. 0 for no timeout
+                 $TIMEOUT_DEFAULT
               ${BLUE}-o <output>${NC} ${GRAY}// output${NC}
                  to specify where to save the output file
+                 $OUTPUT_DEFAULT
               ${BLUE}-u${NC} ${GRAY}// unsorted-output${NC}
                  to allow outputs to be in any order
+                 $UNSORTED_OUTPUT_DEFAULT
               ${BLUE}-c${NC} ${GRAY}// clock${NC}
                  to show runtime for each input
+                 $CLOCK_DEFAULT
+
+To change defaults, make a ${YELLOW}progtester.config${NC} file in ${YELLOW}~/.progtester${NC}. Download
+a sample from the GitHub repository below.
 
 ${BOLD}Copyright (C) 2021 Prokop Hanzl${NC}
 This program is free software: you can redistribute it and/or modify it under
@@ -161,7 +197,7 @@ do_timeout() { # handles timeout
 }
 
 compare_outs() { # compares actual output with the reference
-	if [[ $SORTOUTPUT == 1 ]]; then # if --unsorted-output, sort both the reference and actual output before comparing them
+	if [[ $UNSORTED_OUTPUT == 1 ]]; then # if --unsorted-output, sort both the reference and actual output before comparing them
 		sort "$REF_FILE" > /tmp/progtester/sortedRef
 		sort /tmp/progtester/myout > /tmp/progtester/sortedMyOut
 		diff /tmp/progtester/sortedRef /tmp/progtester/sortedMyOut > /dev/null
@@ -178,7 +214,7 @@ print_time() { # helper for --clock
 test_code() { # runs the tests
 	initialize_success_vars
 	vecho "${LIGHTYELLOW}Testing...${NC}"
-	for IN_FILE in "$DIR"/*_in.txt; do # for each input file in test data directory
+	for IN_FILE in "$TESTDATA_DIR"/*_in.txt; do # for each input file in test data directory
 		REF_FILE="${IN_FILE%in\.txt}out.txt" # find the reference output counterpart
 		if do_timeout; then # if timed out 
 			>&2 vecho "${RED}FAIL: ${NC}$IN_FILE"
@@ -188,9 +224,9 @@ test_code() { # runs the tests
 			if ! compare_outs; then
 				>&2 vecho "${RED}${BOLD}FAIL: ${NC}${BOLD}$IN_FILE${NC}"
 				((FAIL++))
-				if [[ "$WRONGOUTDIR" != 0 ]]; then 
-					mkdir -p "$WRONGOUTDIR"
-					SHORTREF="${REF_FILE//$DIR/}" # just the file name without the directory
+				if [[ "$WRONGOUT_DIR" != 0 ]]; then 
+					mkdir -p "$WRONGOUT_DIR"
+					SHORTREF="${REF_FILE//$TESTDATA_DIR/}" # just the file name without the directory
 					{
 						echo "Input:"
 						cat "$IN_FILE"
@@ -200,8 +236,8 @@ test_code() { # runs the tests
 						echo
 						echo "Your output:"
 						cat /tmp/progtester/myout
-					} > "$WRONGOUTDIR$SHORTREF"
-					>&2 vecho "    ${GRAY}> see ${PURPLE}$WRONGOUTDIR$SHORTREF${NC}"
+					} > "$WRONGOUT_DIR$SHORTREF"
+					>&2 vecho "    ${GRAY}> see ${PURPLE}$WRONGOUT_DIR$SHORTREF${NC}"
 				fi
 			else
 				vecho "${GREEN}${BOLD}OK: ${NC}${BOLD}$IN_FILE${NC}"
@@ -215,7 +251,7 @@ test_code() { # runs the tests
 print_stats() { # prints stats about successful/unsuccessful runs
 	TOTAL=$((FAIL+SUCCESS))
 	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
-	[[ $WRONGOUTDIR != 0 ]] && qecho "See ${PURPLE}$WRONGOUTDIR${NC} for wrong output data"
+	[[ $WRONGOUT_DIR != 0 ]] && qecho "See ${PURPLE}$WRONGOUT_DIR${NC} for wrong output data"
 }
 
 # ======================== BODY ========================
@@ -228,17 +264,17 @@ while getopts ":hs:t:qvw:k:o:uc" OPT; do
 			;;
 		t)	DIR=$OPTARG
 			;;
-		q)	QUIET=1
+		q)	QUIET_MODE=1
 			;;
-		v)	QUIET=0
+		v)	QUIET_MODE=0
 			;;
-		w)	WRONGOUTDIR=$OPTARG
+		w)	WRONGOUT_DIR=$OPTARG
 			;;
 		k)	TIMEOUT=$OPTARG
 			;;
 		o)	OUTPUT=./$OPTARG
 			;;
-		u)	SORTOUTPUT=1
+		u)	UNSORTED_OUTPUT=1
 			;;
 		c)	CLOCK=1
 			;;

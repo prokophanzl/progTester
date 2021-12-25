@@ -21,6 +21,9 @@
  | `-u` | `unsorted-output` | výstupy mohou být v libovolném pořadí (defaultně vypnuto) |
  | `-c` | `clock` | vypíše čas běhu programu pro jednotlivé vstupy (defaultně vypnuto) |
 
+## Nastavení výchozích hodnot
+ Pro přepínače si lze nastavit výchozí hodnoty. Uložte si `progtester.config` do složky `.progtester` ve vašem domovském adresáři a řiďte se pokyny v něm.
+
 ## Exit codes
  | exit code | význam |
  |---|---|

@@ -262,7 +262,7 @@ while getopts ":hs:t:qvw:k:o:uc" OPT; do
 			;;
 		s)	PROG=$OPTARG
 			;;
-		t)	DIR=$OPTARG
+		t)	TESTDATA_DIR=$OPTARG
 			;;
 		q)	QUIET_MODE=1
 			;;

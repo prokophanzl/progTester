@@ -16,7 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.6.1'
+VERSION='0.6.2'
+
+# ======================== TEXT FORMATTING PRESETS ========================
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -26,10 +28,10 @@ PURPLE='\033[0;94m'
 BLUE='\033[0;36m'
 GRAY='\033[0;90m'
 BOLD='\033[1m'
-ITALIC='\033[0;03m'
 NC='\033[0m'
 
-# default values
+# ======================== DEFAULT VALUES ========================
+
 PROG=0 # source code
 DIR=testdata # test data directory
 QUIET=0 # quiet mode
@@ -39,70 +41,90 @@ OUTPUT='/tmp/progtester/tester' # compiler output
 SORTOUTPUT=0 # --unsorted-output toggle
 CLOCK=0 # --clock toggle
 
-SUCCESS=0 # number of successful runs
-FAIL=0 # number of unsuccessful runs
+# ======================== SMALL FUNCTIONS ========================
 
-test_inputs() {
-	VALIDNUMBER='^[0-9]+([.][0-9]+)?$' # regex for number with decimal dot
-	if [[ $OSTYPE == 'darwin'* ]]; then # if on macOS, check for dependencies
-		if ! [[ -x "$(command -v g++-11)" ]]; then
-			echo -e "${RED}Error: g++-11 not installed.${NC} Try brew install g++."
-			exit 5
-		elif ! [[ -x "$(command -v gtimeout)" ]]; then
-			echo -e "${RED}Error: coreutils not installed.${NC} Try brew install coreutils."
-			exit 5
-		fi
-	fi
-	if [[ ! -f "$PROG" ]]; then
-		echo -e "${RED}Error: please specify valid source file.${NC}"
-		exit 3
-	elif [[ ! -d "$DIR" ]]; then
-		echo -e "${RED}Error: invalid test data directory.${NC}"
-		exit 4
-	elif ! [[ $TIMEOUT =~ $VALIDNUMBER ]]; then
-		echo -e "${RED}Error: timeout is not a number.${NC}"
-		exit 6
-	fi
+ismac() {
+	[[ $OSTYPE == 'darwin'* ]] && return 0 || return 1
 }
 
-echo_help() { # displays help screen
-	echo -e "${BLUE}${BOLD}              progTester v$VERSION${NC} ${BOLD}by Prokop Hanzl${NC}"
-	echo -e "${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q]"
-	echo                "                         [-w <wrongouts-dir>] [-k <seconds>] [-o <output>]"
-	echo -e "${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}"
-	echo -e "${BOLD}dependencies:${NC} GNU coreutils - on macOS: brew install coreutils"
-	echo                "              g++ (g++-11 on macOS - brew install g++)"
-	echo -e "${BOLD}     options:${NC} ${BLUE}-h${NC} or ${BLUE}--help${NC} to show this screen"
-	echo -e             "              ${BLUE}-s <source-code>${NC} or ${BLUE}--source <source-code>${NC} to specify the source"
-	echo                "                 code file (required)"
-	echo -e             "              ${BLUE}-t <testdata-dir>${NC} or ${BLUE}--testdata <testdata-dir>${NC} to specify the test"
-	echo                "                 data directory (default: testdata/)"
-	echo -e             "              ${BLUE}-v${NC} or ${BLUE}--verbose${NC} to run in verbose mode (default)"
-	echo -e             "              ${BLUE}-q${NC} or ${BLUE}--quiet${NC} to run in quiet mode"
-	echo -e             "              ${BLUE}-w <wrongouts-dir>${NC} or ${BLUE}--wrongouts <wrongouts-dir>${NC} to specify a"
-	echo                "                 directory for wrong outputs"
-	echo -e             "              ${BLUE}-k <seconds>${NC} or ${BLUE}--killafter <seconds>${NC} to specify a timeout"
-	echo                "                 (in seconds) after which the program is killed. 0 for no"
-	echo                "                 timeout (default)"
-	echo -e             "              ${BLUE}-o <output>${NC} or ${BLUE}--output <output>${NC} to specify where to save the"
-	echo                "                 output file"
-	echo -e             "              ${BLUE}-u${NC} or ${BLUE}--unsorted-output${NC} to allow outputs to be in any order"
-	echo -e             "              ${BLUE}-c${NC} or ${BLUE}--clock${NC} to show runtime for each input"
-	echo
-	echo -e "${BOLD}Copyright (C) 2021 Prokop Hanzl${NC}"
-	echo    "This program is free software: you can redistribute it and/or modify it under"
-	echo    "the terms of the GNU General Public License, version 3."
-	echo
-	echo -e "This script is made and maintained by ${BOLD}Prokop Hanzl${NC} at"
-	echo -e "${GREEN}https://github.com/ProkopHanzl/progTester${NC}. Feel free to request features and"
-	echo    "report bugs in the repository."
-	exit 0
+error() {
+	>&2 echo -e "${RED}ERROR: ${LIGHTYELLOW}$2${NC}"
+	exit "$1"
 }
 
 vecho() { # verbose echo - echo only in verbose mode
-	if [[ $QUIET == 0 ]]; then
-		echo -e "$1"
-	fi
+	[[ $QUIET == 0 ]] && echo -e "$1"
+}
+
+qecho() { # silent echo - echo only in quiet mode
+	[[ $QUIET == 1 ]] && echo -e "$1"
+}
+
+# ======================== INPUT CHECKS ========================
+
+source_valid() {
+	return $([[ -f "$PROG" ]])
+}
+
+testdata_valid() {
+	return $([[ -d "$DIR" ]])
+}
+
+mac_dependencies_installed() {
+	ismac && return $([[ -x "$(command -v g++-11)" ]] && [[ -x "$(command -v gtimeout)" ]])
+}
+
+timeout_valid() {
+	local VALIDNUMBER='^[0-9]+([.][0-9]+)?$' # regex for number with decimal dot
+	return $([[ $TIMEOUT =~ $VALIDNUMBER ]])
+}
+
+# ======================== BODY FUNCTIONS ========================
+
+initialize_success_vars() {
+	SUCCESS=0 # number of successful runs
+	FAIL=0 # number of unsuccessful runs
+}
+
+test_inputs() {
+	! source_valid               && error 3 "Please specify valid source file."
+	! testdata_valid             && error 4 "Invalid test data directory."
+	! mac_dependencies_installed && error 5 "Missing dependencies."
+	! timeout_valid              && error 6 "Timeout is not a number."
+}
+
+echo_help() { # displays help screen
+	echo -e "${BLUE}${BOLD}              progTester v$VERSION${NC} ${BOLD}by Prokop Hanzl${NC}
+${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q]
+                         [-w <wrongouts-dir>] [-k <seconds>] [-o <output>]
+${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}
+${BOLD}dependencies:${NC} GNU coreutils - on macOS: brew install coreutils
+              g++ (g++-11 on macOS - brew install g++)
+${BOLD}     options:${NC} ${BLUE}-h${NC} or ${BLUE}--help${NC} to show this screen
+              ${BLUE}-s <source-code>${NC} or ${BLUE}--source <source-code>${NC} to specify the source
+                 code file (required)
+              ${BLUE}-t <testdata-dir>${NC} or ${BLUE}--testdata <testdata-dir>${NC} to specify the test
+                 data directory (default: testdata/)
+              ${BLUE}-v${NC} or ${BLUE}--verbose${NC} to run in verbose mode (default)
+              ${BLUE}-q${NC} or ${BLUE}--quiet${NC} to run in quiet mode
+              ${BLUE}-w <wrongouts-dir>${NC} or ${BLUE}--wrongouts <wrongouts-dir>${NC} to specify a
+                 directory for wrong outputs
+              ${BLUE}-k <seconds>${NC} or ${BLUE}--killafter <seconds>${NC} to specify a timeout
+                 (in seconds) after which the program is killed. 0 for no
+                 timeout (default)
+              ${BLUE}-o <output>${NC} or ${BLUE}--output <output>${NC} to specify where to save the
+                 output file
+              ${BLUE}-u${NC} or ${BLUE}--unsorted-output${NC} to allow outputs to be in any order
+              ${BLUE}-c${NC} or ${BLUE}--clock${NC} to show runtime for each input
+
+${BOLD}Copyright (C) 2021 Prokop Hanzl${NC}
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License, version 3.
+
+This script is made and maintained by ${BOLD}Prokop Hanzl${NC} at
+${GREEN}https://github.com/ProkopHanzl/progTester${NC}. Feel free to request features and
+report bugs in the repository."
+	exit 0
 }
 
 cleanup() {
@@ -111,49 +133,49 @@ cleanup() {
 
 compile_code() { # compiles code
 	vecho "${LIGHTYELLOW}Compiling...${NC}"
-	COMPILER=g++
-	if [[ $OSTYPE == 'darwin'* ]]; then
-		COMPILER=g++-11
-	fi
+	ismac && COMPILER=g++-11 || COMPILER=g++
 	if ! $COMPILER "$PROG" -Wall -pedantic -O2 -o "$OUTPUT"; then
-		>&2 echo -e "${RED}Error compiling.${NC}"
 		cleanup
-		exit 1
+		error 1 "Error compiling."
 	fi
 }
 
 do_timeout() { # handles timeout
+	local TIME1
+	local TIME2
 	TIME1=$(gdate +%s%3N) # nanoseconds in Unix time
-	if [[ $OSTYPE == 'darwin'* ]]; then # if on macOS, use gtimeout
-		gtimeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
+	if ismac; then # if on macOS, use gtimeout
+		gtimeout $TIMEOUT $OUTPUT < "$IN_FILE" > /tmp/progtester/myout
 	else
-		timeout $TIMEOUT $OUTPUT < $IN_FILE > /tmp/progtester/myout
+		timeout $TIMEOUT $OUTPUT < "$IN_FILE" > /tmp/progtester/myout
 	fi
-	TIMEOUTRET=$? # return value of timeout, 124 means timed out
+	local TIMEOUTRET=$? # return value of timeout, 124 means timed out
 	TIME2=$(gdate +%s%3N)
+	TIMEDIFF=$((TIME2-TIME1))
+	return $([[ $TIMEOUTRET == 124 ]])
 }
 
 compare_outs() { # compares actual output with the reference
 	if [[ $SORTOUTPUT == 1 ]]; then # if --unsorted-output, sort both the reference and actual output before comparing them
-		cat $REF_FILE | sort > /tmp/progtester/sortedRef
-		cat /tmp/progtester/myout | sort > /tmp/progtester/sortedMyOut
+		sort "$REF_FILE" > /tmp/progtester/sortedRef
+		sort /tmp/progtester/myout > /tmp/progtester/sortedMyOut
 		diff /tmp/progtester/sortedRef /tmp/progtester/sortedMyOut > /dev/null
 	else
-		diff $REF_FILE /tmp/progtester/myout > /dev/null
+		diff "$REF_FILE" /tmp/progtester/myout > /dev/null
 	fi
 }
 
 print_time() { # helper for --clock
-	MS="000$1"
+	local MS="000$1"
 	>&2 vecho "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
 }
 
 test_code() { # runs the tests
+	initialize_success_vars
 	vecho "${LIGHTYELLOW}Testing...${NC}"
 	for IN_FILE in "$DIR"/*_in.txt; do # for each input file in test data directory
-		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'` # find the reference output counterpart
-		do_timeout
-		if [ $TIMEOUTRET == 124 ]; then # if timed out 
+		REF_FILE=$(echo -n "$IN_FILE" | sed -e 's/_in\(.*\)$/_out\1/') # find the reference output counterpart
+		if do_timeout; then # if timed out 
 			>&2 vecho "${RED}FAIL: ${NC}$IN_FILE"
 			>&2 vecho "    ${GRAY}> ${YELLOW}killed after ${PURPLE}${TIMEOUT}s${NC}"
 			((FAIL++))
@@ -164,34 +186,34 @@ test_code() { # runs the tests
 				if [[ "$WRONGOUTDIR" != 0 ]]; then 
 					mkdir -p "$WRONGOUTDIR"
 					SHORTREF="${REF_FILE//$DIR/}" # just the file name without the directory
-					>&2 echo "Input:" > "$WRONGOUTDIR$SHORTREF"
-					>&2 cat $IN_FILE >> "$WRONGOUTDIR$SHORTREF"
-					>&2 echo >> "$WRONGOUTDIR$SHORTREF"
-					>&2 echo "Expected output:" >> "$WRONGOUTDIR$SHORTREF"
-					>&2 cat $REF_FILE >> "$WRONGOUTDIR$SHORTREF"
-					>&2 echo >> "$WRONGOUTDIR$SHORTREF"
-					>&2 echo "Your output:" >> "$WRONGOUTDIR$SHORTREF"
-					>&2 cat /tmp/progtester/myout >> "$WRONGOUTDIR$SHORTREF"
+					{
+						echo "Input:"
+						cat "$IN_FILE"
+						echo
+						echo "Expected output:"
+						cat "$REF_FILE"
+						echo
+						echo "Your output:"
+						cat /tmp/progtester/myout
+					} > "$WRONGOUTDIR$SHORTREF"
 					>&2 vecho "    ${GRAY}> see ${PURPLE}$WRONGOUTDIR$SHORTREF${NC}"
 				fi
 			else
 				vecho "${GREEN}${BOLD}OK: ${NC}${BOLD}$IN_FILE${NC}"
 				((SUCCESS++))
 			fi
-			if [[ $CLOCK == 1 ]]; then
-				print_time $((TIME2-$TIME1))
-			fi
+			[[ $CLOCK == 1 ]] && print_time $TIMEDIFF
 		fi
 	done
 }
 
 print_stats() { # prints stats about successful/unsuccessful runs
-	TOTAL=$(($FAIL+$SUCCESS))
+	TOTAL=$((FAIL+SUCCESS))
 	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
-	if [[ $WRONGOUTDIR != 0 ]]; then
-		vecho "See ${PURPLE}$WRONGOUTDIR${NC} for wrong output data"
-	fi
+	[[ $WRONGOUTDIR != 0 ]] && qecho "See ${PURPLE}$WRONGOUTDIR${NC} for wrong output data"
 }
+
+# ======================== BODY ========================
 
 while getopts ":hs:t:qvw:k:o:uc" OPT; do
 	case $OPT in
@@ -225,8 +247,4 @@ test_code
 print_stats
 cleanup
 
-if [[ $TOTAL == $SUCCESS ]]; then
-	exit 0
-else
-	exit 2
-fi
+[[ $TOTAL == "$SUCCESS" ]] && exit 0 || exit 2 # exit code 0 if all runs successful, 2 if not

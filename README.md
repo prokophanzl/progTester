@@ -31,3 +31,4 @@
  | 4 | testovací data nejsou složka |
  | 5 | chybějící dependencies |
  | 6 | `-k` nedostal platné číslo |
+ | 7 | neznámý přepínač |

@@ -237,6 +237,8 @@ while getopts ":hs:t:qvw:k:o:uc" OPT; do
 			;;
 		c)	CLOCK=1
 			;;
+		*)	error 7 "Unkown option used."
+			;;
 	esac
 done
 

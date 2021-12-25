@@ -100,22 +100,27 @@ ${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q
 ${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}
 ${BOLD}dependencies:${NC} GNU coreutils - on macOS: brew install coreutils
               g++ (g++-11 on macOS - brew install g++)
-${BOLD}     options:${NC} ${BLUE}-h${NC} or ${BLUE}--help${NC} to show this screen
-              ${BLUE}-s <source-code>${NC} or ${BLUE}--source <source-code>${NC} to specify the source
-                 code file (required)
-              ${BLUE}-t <testdata-dir>${NC} or ${BLUE}--testdata <testdata-dir>${NC} to specify the test
-                 data directory (default: testdata/)
-              ${BLUE}-v${NC} or ${BLUE}--verbose${NC} to run in verbose mode (default)
-              ${BLUE}-q${NC} or ${BLUE}--quiet${NC} to run in quiet mode
-              ${BLUE}-w <wrongouts-dir>${NC} or ${BLUE}--wrongouts <wrongouts-dir>${NC} to specify a
-                 directory for wrong outputs
-              ${BLUE}-k <seconds>${NC} or ${BLUE}--killafter <seconds>${NC} to specify a timeout
-                 (in seconds) after which the program is killed. 0 for no
-                 timeout (default)
-              ${BLUE}-o <output>${NC} or ${BLUE}--output <output>${NC} to specify where to save the
-                 output file
-              ${BLUE}-u${NC} or ${BLUE}--unsorted-output${NC} to allow outputs to be in any order
-              ${BLUE}-c${NC} or ${BLUE}--clock${NC} to show runtime for each input
+${BOLD}       flags:${NC} ${BLUE}-h${NC} ${GRAY}// help${NC}
+                 to show this screen
+              ${BLUE}-s <source-code>${NC} ${GRAY}// source${NC}
+                 to specify the source code file (required)
+              ${BLUE}-t <testdata-dir>${NC} ${GRAY}// testdata${NC}
+                 to specify the test data directory (default: testdata/)
+              ${BLUE}-v${NC} ${GRAY}// verbose${NC}
+                 to run in verbose mode (default)
+              ${BLUE}-q${NC} ${GRAY}// quiet${NC}
+                 to run in quiet mode
+              ${BLUE}-w <wrongouts-dir>${NC} ${GRAY}// wrongouts${NC}
+                 to specify a directory for wrong outputs
+              ${BLUE}-k <seconds>${NC} ${GRAY}// kill-after${NC}
+                 to specify a timeout (in seconds) after which the program is
+                 killed. 0 for no timeout (default)
+              ${BLUE}-o <output>${NC} ${GRAY}// output${NC}
+                 to specify where to save the output file
+              ${BLUE}-u${NC} ${GRAY}// unsorted-output${NC}
+                 to allow outputs to be in any order
+              ${BLUE}-c${NC} ${GRAY}// clock${NC}
+                 to show runtime for each input
 
 ${BOLD}Copyright (C) 2021 Prokop Hanzl${NC}
 This program is free software: you can redistribute it and/or modify it under
@@ -237,7 +242,7 @@ while getopts ":hs:t:qvw:k:o:uc" OPT; do
 			;;
 		c)	CLOCK=1
 			;;
-		*)	error 7 "Unkown option used."
+		*)	error 7 "Unkown option used. See ${PURPLE}progtester -h${LIGHTYELLOW}."
 			;;
 	esac
 done

@@ -205,7 +205,7 @@ compare_outs() { # compares actual output with the reference
 
 print_time() { # helper for --clock
 	local MS="000$1"
-	>&2 vecho "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
+	vecho "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
 }
 
 test_code() { # runs the tests

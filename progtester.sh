@@ -36,10 +36,10 @@ PROG=0 # source code
 DIR=testdata # test data directory
 QUIET=0 # quiet mode
 WRONGOUTDIR=0 # wrong output directory
-TIMEOUT=0 # timeout for --kill-after
+TIMEOUT=0 # timeout for kill-after
 OUTPUT='/tmp/progtester/tester' # compiler output
-SORTOUTPUT=0 # --unsorted-output toggle
-CLOCK=0 # --clock toggle
+SORTOUTPUT=0 # unsorted-output toggle
+CLOCK=0 # clock toggle
 
 # ======================== SMALL FUNCTIONS ========================
 

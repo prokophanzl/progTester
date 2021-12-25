@@ -96,8 +96,8 @@ test_inputs() {
 echo_help() { # displays help screen
 	echo -e "${BLUE}${BOLD}              progTester v$VERSION${NC} ${BOLD}by Prokop Hanzl${NC}
 ${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q]
-                         [-w <wrongouts-dir>] [-k <seconds>] [-o <output>]
-${BOLD}requirements:${NC} test data must be in the format ${YELLOW}0000_in.txt ${GREEN}0000_out.txt${NC}
+                         [-w <wrongouts-dir>] [-k <seconds>] [-o <output>] [-u] [-c]
+${BOLD}requirements:${NC} test data must be in the format ${YELLOW}SOMETHING_in.txt ${GREEN}SOMETHING_out.txt${NC}
 ${BOLD}dependencies:${NC} GNU coreutils - on macOS: brew install coreutils
               g++ (g++-11 on macOS - brew install g++)
 ${BOLD}       flags:${NC} ${BLUE}-h${NC} ${GRAY}// help${NC}

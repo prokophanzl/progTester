@@ -185,11 +185,8 @@ do_timeout() { # handles timeout
 	local TIME1
 	local TIME2
 	TIME1=$(gdate +%s%3N) # nanoseconds in Unix time
-	if ismac; then # if on macOS, use gtimeout
-		gtimeout $TIMEOUT $OUTPUT < "$IN_FILE" > /tmp/progtester/myout
-	else
-		timeout $TIMEOUT $OUTPUT < "$IN_FILE" > /tmp/progtester/myout
-	fi
+	ismac && local TIMEOUT_FUNC=gtimeout || local TIMEOUT_FUNC=timeout # if on macOS, use gtimeout
+	$TIMEOUT_FUNC $TIMEOUT $OUTPUT < "$IN_FILE" > /tmp/progtester/myout
 	local TIMEOUTRET=$? # return value of timeout, 124 means timed out
 	TIME2=$(gdate +%s%3N)
 	TIMEDIFF=$((TIME2-TIME1))

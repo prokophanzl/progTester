@@ -75,7 +75,7 @@ ismac() {
 }
 
 error() {
-	>&2 echo -e "${RED}ERROR: ${LIGHTYELLOW}$2${NC}"
+	>&2 echo -e "${RED}ERROR: ${LIGHTYELLOW}${2}${NC}"
 	exit "$1"
 }
 
@@ -173,8 +173,8 @@ cleanup() {
 }
 
 compile_code() { # compiles code
-	vecho "${LIGHTYELLOW}Compiling...${NC}"
-	ismac && COMPILER=g++-11 || COMPILER=g++
+	ismac && local COMPILER=g++-11 || local COMPILER=g++
+	vecho "${LIGHTYELLOW}Compiling using $COMPILER...${NC}"
 	if ! $COMPILER "$PROG" -Wall -pedantic -O2 -o "$OUTPUT"; then
 		cleanup
 		error 1 "Error compiling."

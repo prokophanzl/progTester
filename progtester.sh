@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-VERSION='0.6.0'
+VERSION='0.6.1'
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -99,14 +99,18 @@ echo_help() { # displays help screen
 	exit 0
 }
 
+vecho() { # verbose echo - echo only in verbose mode
+	if [[ $QUIET == 0 ]]; then
+		echo -e "$1"
+	fi
+}
+
 cleanup() {
 	rm -r /tmp/progtester
 }
 
 compile_code() { # compiles code
-	if [[ $QUIET == 0 ]]; then
-		echo -e "${LIGHTYELLOW}Compiling...${NC}"
-	fi
+	vecho "${LIGHTYELLOW}Compiling...${NC}"
 	COMPILER=g++
 	if [[ $OSTYPE == 'darwin'* ]]; then
 		COMPILER=g++-11
@@ -141,27 +145,21 @@ compare_outs() { # compares actual output with the reference
 
 print_time() { # helper for --clock
 	MS="000$1"
-	>&2 echo -e "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
+	>&2 vecho "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
 }
 
 test_code() { # runs the tests
-	if [[ $QUIET == 0 ]]; then
-		echo -e "${LIGHTYELLOW}Testing...${NC}"
-	fi
+	vecho "${LIGHTYELLOW}Testing...${NC}"
 	for IN_FILE in "$DIR"/*_in.txt; do # for each input file in test data directory
 		REF_FILE=`echo -n $IN_FILE | sed -e 's/_in\(.*\)$/_out\1/'` # find the reference output counterpart
 		do_timeout
 		if [ $TIMEOUTRET == 124 ]; then # if timed out 
-			if [[ $QUIET == 0 ]]; then
-				>&2 echo -e "${RED}FAIL: ${NC}$IN_FILE"
-				>&2 echo -e "    ${GRAY}> ${YELLOW}killed after ${PURPLE}${TIMEOUT}s${NC}"
-			fi
+			>&2 vecho "${RED}FAIL: ${NC}$IN_FILE"
+			>&2 vecho "    ${GRAY}> ${YELLOW}killed after ${PURPLE}${TIMEOUT}s${NC}"
 			((FAIL++))
 		else
 			if ! compare_outs; then
-				if [[ $QUIET == 0 ]]; then
-					>&2 echo -e "${RED}${BOLD}FAIL: ${NC}${BOLD}$IN_FILE${NC}"
-				fi
+				>&2 vecho "${RED}${BOLD}FAIL: ${NC}${BOLD}$IN_FILE${NC}"
 				((FAIL++))
 				if [[ "$WRONGOUTDIR" != 0 ]]; then 
 					mkdir -p "$WRONGOUTDIR"
@@ -174,17 +172,13 @@ test_code() { # runs the tests
 					>&2 echo >> "$WRONGOUTDIR$SHORTREF"
 					>&2 echo "Your output:" >> "$WRONGOUTDIR$SHORTREF"
 					>&2 cat /tmp/progtester/myout >> "$WRONGOUTDIR$SHORTREF"
-					if [[ $QUIET == 0 ]]; then
-						>&2 echo -e "    ${GRAY}> see ${PURPLE}$WRONGOUTDIR$SHORTREF${NC}"
-					fi
+					>&2 vecho "    ${GRAY}> see ${PURPLE}$WRONGOUTDIR$SHORTREF${NC}"
 				fi
 			else
-				if [[ $QUIET == 0 ]]; then
-					echo -e "${GREEN}${BOLD}OK: ${NC}${BOLD}$IN_FILE${NC}"
-				fi
+				vecho "${GREEN}${BOLD}OK: ${NC}${BOLD}$IN_FILE${NC}"
 				((SUCCESS++))
 			fi
-			if [[ $QUIET == 0 ]] && [[ $CLOCK == 1 ]]; then
+			if [[ $CLOCK == 1 ]]; then
 				print_time $((TIME2-$TIME1))
 			fi
 		fi
@@ -194,8 +188,8 @@ test_code() { # runs the tests
 print_stats() { # prints stats about successful/unsuccessful runs
 	TOTAL=$(($FAIL+$SUCCESS))
 	echo -e "${BLUE}$SUCCESS/$TOTAL${NC} ($SUCCESS successes and $FAIL failures)"
-	if [[ $QUIET == 1 ]] && [[ $WRONGOUTDIR != 0 ]]; then
-		echo -e "See ${PURPLE}$WRONGOUTDIR${NC} for wrong output data"
+	if [[ $WRONGOUTDIR != 0 ]]; then
+		vecho "See ${PURPLE}$WRONGOUTDIR${NC} for wrong output data"
 	fi
 }
 

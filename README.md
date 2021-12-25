@@ -2,7 +2,7 @@
  progTester je testovací skript pro ProgTest. Dá se ale využít i jinde.
 
 ## Použití
- `progtester.sh -s <source-code> [-t <testdata-dir>]`, kde `<source-code>` je zdrojový kód vašeho programu a `<testdata-dir>` složka s testovacími daty (defaultně se předpokládá jméno testdata). Testovací data musí být ve formátu `something_in.txt` `something_out.txt`, kde `something` by nemělo obsahovat substring `_in`.
+ `progtester.sh -s <source-code> [-t <testdata-dir>]`, kde `<source-code>` je zdrojový kód vašeho programu a `<testdata-dir>` složka s testovacími daty (defaultně se předpokládá jméno testdata). Testovací data musí být ve formátu `SOMETHING_in.txt` `SOMETHING_out.txt`, kde `SOMETHING` se mezi názvy vstupního a výstupního souboru shoduje.
 
 ## Doporučení
  Dobrým nápadem je přidat do PATH nějakou složku, kde si uděláte softlink na původní skript, který budete mít uložený v repozitáři, který si naklonujete.

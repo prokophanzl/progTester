@@ -20,7 +20,7 @@
 # is used to keep code clean. Comments starting with "shellcheck" are
 # directives for it and have no meaning to the user.
 
-VERSION='0.7.0'
+VERSION='0.7.1'
 
 # ======================== TEXT FORMATTING PRESETS ========================
 
@@ -81,8 +81,19 @@ ismac() {
 	[[ $OSTYPE == 'darwin'* ]] && return 0 || return 1
 }
 
+ERRORS=(
+	""                                                              # 0: not an error (successful run)
+	"Error compiling."                                              # 1
+	""                                                              # 2: not an error (exit code for unsuccessful runs)
+	"Please specify valid source file."                             # 3
+	"Invalid test data directory."                                  # 4
+	"Missing dependencies."                                         # 5
+	"Timeout is not a number."                                      # 6
+	"Unkown option used. See ${PURPLE}progtester -h${LIGHTYELLOW}." # 7
+)
+
 error() {
-	>&2 echo -e "${RED}ERROR: ${LIGHTYELLOW}${2}${NC}"
+	>&2 echo -e "${RED}ERROR: ${LIGHTYELLOW}${ERRORS[$1]}${NC}"
 	exit "$1"
 }
 
@@ -125,10 +136,10 @@ initialize_success_vars() {
 }
 
 test_inputs() {
-	! source_valid               && error 3 "Please specify valid source file."
-	! testdata_valid             && error 4 "Invalid test data directory."
-	! mac_dependencies_installed && error 5 "Missing dependencies."
-	! timeout_valid              && error 6 "Timeout is not a number."
+	! source_valid               && error 3
+	! testdata_valid             && error 4
+	! mac_dependencies_installed && error 5
+	! timeout_valid              && error 6
 }
 
 echo_help() { # displays help screen
@@ -189,7 +200,7 @@ compile_code() { # compiles code
 	vecho "${LIGHTYELLOW}Compiling using $COMPILER...${NC}"
 	if ! $COMPILER "$PROG" -Wall -pedantic -O2 -o "$OUTPUT"; then
 		cleanup
-		error 1 "Error compiling."
+		error 1
 	fi
 }
 
@@ -288,7 +299,7 @@ while getopts ":hs:t:qvw:k:o:uc" OPT; do
 			;;
 		c)	CLOCK=1
 			;;
-		*)	error 7 "Unkown option used. See ${PURPLE}progtester -h${LIGHTYELLOW}."
+		*)	error 7
 			;;
 	esac
 done

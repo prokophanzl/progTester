@@ -20,7 +20,7 @@
 # is used to keep code clean. Comments starting with "shellcheck" are
 # directives for it and have no meaning to the user.
 
-VERSION='0.7.1'
+VERSION='0.7.2'
 
 # ======================== TEXT FORMATTING PRESETS ========================
 
@@ -228,8 +228,42 @@ compare_outs() { # compares actual output with the reference
 }
 
 print_time() { # helper for clock
-	local MS="000$1"
-	vecho "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
+	if [[ $CLOCK == 1 ]]; then
+		local MS="000$1"
+		print_in_stat "time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
+	fi
+}
+
+print_run() {
+	if [[ $1 == 1 ]]; then
+		vecho "${GREEN}${BOLD}OK: ${NC}${BOLD}${2}${NC}"
+		((SUCCESS++))
+	elif [[ $1 == 0 ]]; then
+		>&2 vecho "${RED}${BOLD}FAIL: ${NC}${BOLD}${2}${NC}"
+		((FAIL++))
+	fi
+}
+
+print_in_stat() {
+	vecho "    ${GRAY}> ${1}${NC}"
+}
+
+create_wrongouts() {
+	if [[ "$WRONGOUT_DIR" != 0 ]]; then 
+		mkdir -p "$WRONGOUT_DIR"
+		SHORTREF="${REF_FILE//$TESTDATA_DIR/}" # just the file name without the directory
+		{
+			echo "Input:"
+			cat "$IN_FILE"
+			echo
+			echo "Expected output:"
+			cat "$REF_FILE"
+			echo
+			echo "Your output:"
+			cat /tmp/progtester/myout
+		} > "${WRONGOUT_DIR}${SHORTREF}"
+		>&2 print_in_stat "see ${PURPLE}${WRONGOUT_DIR}${SHORTREF}${NC}"
+	fi
 }
 
 test_code() { # runs the tests
@@ -238,33 +272,16 @@ test_code() { # runs the tests
 	for IN_FILE in "$TESTDATA_DIR"/*_in.txt; do # for each input file in test data directory
 		REF_FILE="${IN_FILE%in\.txt}out.txt" # find the reference output counterpart
 		if do_timeout; then # if timed out 
-			>&2 vecho "${RED}FAIL: ${NC}$IN_FILE"
-			>&2 vecho "    ${GRAY}> ${YELLOW}killed after ${PURPLE}${TIMEOUT}s${NC}"
-			((FAIL++))
+			print_run 0 $IN_FILE
+			>&2 print_in_stat "${YELLOW}killed after ${PURPLE}${TIMEOUT}s${NC}"
 		else
 			if ! compare_outs; then
-				>&2 vecho "${RED}${BOLD}FAIL: ${NC}${BOLD}${IN_FILE}${NC}"
-				((FAIL++))
-				if [[ "$WRONGOUT_DIR" != 0 ]]; then 
-					mkdir -p "$WRONGOUT_DIR"
-					SHORTREF="${REF_FILE//$TESTDATA_DIR/}" # just the file name without the directory
-					{
-						echo "Input:"
-						cat "$IN_FILE"
-						echo
-						echo "Expected output:"
-						cat "$REF_FILE"
-						echo
-						echo "Your output:"
-						cat /tmp/progtester/myout
-					} > "${WRONGOUT_DIR}${SHORTREF}"
-					>&2 vecho "    ${GRAY}> see ${PURPLE}${WRONGOUT_DIR}${SHORTREF}${NC}"
-				fi
+				print_run 0 $IN_FILE
+				create_wrongouts
 			else
-				vecho "${GREEN}${BOLD}OK: ${NC}${BOLD}${IN_FILE}${NC}"
-				((SUCCESS++))
+				print_run 1 $IN_FILE
 			fi
-			[[ $CLOCK == 1 ]] && print_time $TIMEDIFF
+			print_time $TIMEDIFF
 		fi
 	done
 }

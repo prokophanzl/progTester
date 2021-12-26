@@ -1,37 +1,42 @@
 # progTester
- progTester je testovací skript pro ProgTest. Dá se ale využít i jinde.
+ progTester is a C/C++ test script developed mainly for ProgTest (FIT CTU).
 
-## Použití
- `progtester.sh -s <source-code> [-t <testdata-dir>]`, kde `<source-code>` je zdrojový kód vašeho programu a `<testdata-dir>` složka s testovacími daty (defaultně se předpokládá jméno testdata). Testovací data musí být ve formátu `SOMETHING_in.txt` `SOMETHING_out.txt`, kde `SOMETHING` se mezi názvy vstupního a výstupního souboru shoduje.
+## Usage
+ `progtester.sh -s <source-code> [-t <testdata-dir>]`, where `<source-code>` is the source code and `<testdata-dir>` is the directory containing test data (the name `testdata` is assumed by default).
+ Test data must be in the format of `SOMETHING_in.txt` `SOMETHING_out.txt`, where `SOMETHING` is the same between the in and out files. See [Flags](#flags) for more options.
 
-## Doporučení
- Dobrým nápadem je přidat do PATH nějakou složku, kde si uděláte softlink na původní skript, který budete mít uložený v repozitáři, který si naklonujete.
+## Setup recommendation
+ Clone this repository to a directory on your computer. Add a folder to your PATH and make a link to `progtester.sh` in it.
 
-## Přepínače
- | přepínač | jméno | význam |
+## Changing default settings
+ You can change defaults for most flags. Save `progtester.config` into a directory called `.progtester` in your home directory and follow the instructions in it.
+ 
+## Flags
+ | flag | name | meaning |
  |---|---|---|
- | `-h` | `help` | zobrazí help screen |
- | `-s <source-code>` | `source` | specifikuje zdrojový kód (povinný) |
- | `-t <testdata-dir>` | `testdata` | specifikuje složku s testovacími daty (defaultně předpokládá jméno `testdata`) |
- | `-v` | `verbose` | vypíše všechno (default) |
- | `-q` | `quiet` | vypíše pouze errory/varování u kopilace a výsledek programu |
- | `-w <wrongouts-dir>` | `wrongouts` | specifikuje složku, kam se uloží chybné výstupy programu (defaultně chybné výstupy neukládá) |
- | `-k <seconds>` | `kill-after` | čas (ve vteřinách), po kterém se jednotlivý běh ukončí (defaultně 0, tj. běh není časově omezen) |
- | `-o <output>` | `output` | soubor, kam se má uložit zkompilovaný program (defaultně se neukládá) |
- | `-u` | `unsorted-output` | výstupy mohou být v libovolném pořadí (defaultně vypnuto) |
- | `-c` | `clock` | vypíše čas běhu programu pro jednotlivé vstupy (defaultně vypnuto) |
-
-## Nastavení výchozích hodnot
- Pro přepínače si lze nastavit výchozí hodnoty. Uložte si `progtester.config` do složky `.progtester` ve vašem domovském adresáři a řiďte se pokyny v něm.
+ | `-h` | `help` | display help screen |
+ | `-s <source-code>` | `source` | specify source code (required) |
+ | `-t <testdata-dir>` | `testdata` | specify test data directory (`testdata` assumed by default) |
+ | `-v` | `verbose` | print all output (default) |
+ | `-q` | `quiet` | suppress all output except compilation errors/warnings and script output |
+ | `-w <wrongouts-dir>` | `wrongouts` | specify directory to save wrong output data in (none by default) |
+ | `-k <seconds>` | `kill-after` | time (in seconds) after which each run will be killed (off by default) |
+ | `-o <output>` | `output` | where the compiled binary should be saved (discarded by default) |
+ | `-u` | `unsorted-output` | output lines can be in any order (off by default) |
+ | `-c` | `clock` | list runtimes for each input (off by default) |
 
 ## Exit codes
- | exit code | význam |
+ | exit code | meaning |
  |---|---|
- | 0 | program proběhl úspěšně |
- | 1 | chyba při kompilaci |
- | 2 | výstup se neshoduje s referenčním nebo došlo k timeoutu |
- | 3 | zdrojový kód programu nebyl specifikovaný nebo neexistuje |
- | 4 | testovací data nejsou složka |
- | 5 | chybějící dependencies |
- | 6 | `-k` nedostal platné číslo |
- | 7 | neznámý přepínač |
+ | 0 | sucessful run |
+ | 1 | error compiling |
+ | 2 | wrong output(s) and/or timeout(s) |
+ | 3 | source code wasn't specified or doesn't exist |
+ | 4 | test data is not a directory |
+ | 5 | missing dependencies |
+ | 6 | `-k` received invalid number |
+ | 7 | unknown flag used |
+
+## Acknowledgements
+[Vidar Holen](https://github.com/koalaman) for [shellcheck](https://shellcheck.net), a great tool that helps me immensely when developing the script.
+[Jakub Charvat](https://github.com/jakcharvat) for the initial idea of a [more featured test script for ProgTest](https://gist.github.com/jakcharvat/c8ab918d3927361ae6d5d977587752d2).

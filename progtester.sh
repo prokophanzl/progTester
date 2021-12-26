@@ -197,7 +197,7 @@ do_timeout() { # handles timeout
 }
 
 compare_outs() { # compares actual output with the reference
-	if [[ $UNSORTED_OUTPUT == 1 ]]; then # if --unsorted-output, sort both the reference and actual output before comparing them
+	if [[ $UNSORTED_OUTPUT == 1 ]]; then # if unsorted-output, sort both the reference and actual output before comparing them
 		sort "$REF_FILE" > /tmp/progtester/sortedRef
 		sort /tmp/progtester/myout > /tmp/progtester/sortedMyOut
 		diff /tmp/progtester/sortedRef /tmp/progtester/sortedMyOut > /dev/null
@@ -206,7 +206,7 @@ compare_outs() { # compares actual output with the reference
 	fi
 }
 
-print_time() { # helper for --clock
+print_time() { # helper for clock
 	local MS="000$1"
 	vecho "    ${GRAY}> time elapsed: ${PURPLE}$(($1 / 1000)).${MS: -3}s${NC}"
 }
@@ -290,4 +290,4 @@ test_code
 print_stats
 cleanup
 
-[[ $TOTAL == "$SUCCESS" ]] && exit 0 || exit 2 # exit code 0 if all runs successful, 2 if not
+[[ $TOTAL == "$SUCCESS" ]] && exit 0 || exit 2 # exit code 0 if all runs were successful, 2 if not

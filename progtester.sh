@@ -16,6 +16,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+# In development, shellcheck (https://github.com/koalaman/shellcheck/)
+# is used to keep code clean. Comments starting with "shellcheck" are
+# directives for it and have no meaning to the user.
+
 VERSION='0.7.0'
 
 # ======================== TEXT FORMATTING PRESETS ========================
@@ -43,6 +47,7 @@ UNSORTED_OUTPUT=0 # unsorted-output toggle
 CLOCK=0 # clock toggle
 
 CONFIGFILE=~/.progtester/progtester.config
+# shellcheck disable=SC1090
 [[ -f $CONFIGFILE ]] && . $CONFIGFILE # if it exists, include user config
 
 # ======================== HELP SCREEN DEFAULTS DISPLAY HELPER ========================
@@ -92,19 +97,23 @@ qecho() { # silent echo - echo only in quiet mode
 # ======================== INPUT CHECKS ========================
 
 source_valid() {
+	# shellcheck disable=SC2046
 	return $([[ -f "$PROG" ]])
 }
 
 testdata_valid() {
+	# shellcheck disable=SC2046
 	return $([[ -d "$TESTDATA_DIR" ]])
 }
 
 mac_dependencies_installed() {
+	# shellcheck disable=SC2046
 	ismac && return $([[ -x "$(command -v g++-11)" ]] && [[ -x "$(command -v gtimeout)" ]])
 }
 
 timeout_valid() {
 	local VALIDNUMBER='^[0-9]+([.][0-9]+)?$' # regex for number with decimal dot
+	# shellcheck disable=SC2046
 	return $([[ $TIMEOUT =~ $VALIDNUMBER ]])
 }
 
@@ -193,6 +202,7 @@ do_timeout() { # handles timeout
 	local TIMEOUTRET=$? # return value of timeout, 124 means timed out
 	TIME2=$(gdate +%s%3N)
 	TIMEDIFF=$((TIME2-TIME1))
+	# shellcheck disable=SC2046
 	return $([[ $TIMEOUTRET == 124 ]])
 }
 

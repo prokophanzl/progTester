@@ -45,28 +45,30 @@ CLOCK=0 # clock toggle
 CONFIGFILE=~/.progtester/progtester.config
 [[ -f $CONFIGFILE ]] && . $CONFIGFILE # if it exists, include user config
 
-# ======================== HELP SCREEN DEFAULTS DISPLAY HELPERS ========================
+# ======================== HELP SCREEN DEFAULTS DISPLAY HELPER ========================
 
-DEFAULTWORD="${GRAY}(default)${NC}"
- DEFAULTOFF="${GRAY}default: off${NC}"
-  DEFAULTON="${GRAY}default: on${NC}"
- DEFAULTON1="${GRAY}default:"
+helpscreen_defaults_display_setup() {
+	DEFAULTWORD="${GRAY}(default)${NC}"
+	 DEFAULTOFF="${GRAY}default: off${NC}"
+	  DEFAULTON="${GRAY}default: on${NC}"
+	 DEFAULTON1="${GRAY}default:"
 
-if [[ $QUIET_MODE == 0 ]]; then
-	VERBOSE_DEFAULT=$DEFAULTWORD
-	QUIET_DEFAULT=""
-else
-	VERBOSE_DEFAULT=""
-	QUIET_DEFAULT=$DEFAULTWORD
-fi
+	if [[ $QUIET_MODE == 0 ]]; then
+		VERBOSE_DEFAULT=$DEFAULTWORD
+		QUIET_DEFAULT=""
+	else
+		VERBOSE_DEFAULT=""
+		QUIET_DEFAULT=$DEFAULTWORD
+	fi
 
-[[ $WRONGOUT_DIR    == 0 ]] && WRONGOUT_DIR_DEFAULT=$DEFAULTOFF    || WRONGOUT_DIR_DEFAULT="${DEFAULTON1} ${WRONGOUT_DIR}${NC}"
-[[ $TIMEOUT         == 0 ]] && TIMEOUT_DEFAULT=$DEFAULTOFF         || TIMEOUT_DEFAULT="${DEFAULTON1} ${TIMEOUT} seconds${NC}"
-[[ $UNSORTED_OUTPUT == 0 ]] && UNSORTED_OUTPUT_DEFAULT=$DEFAULTOFF || UNSORTED_OUTPUT_DEFAULT=$DEFAULTON
-[[ $CLOCK           == 0 ]] && CLOCK_DEFAULT=$DEFAULTOFF           || CLOCK_DEFAULT=$DEFAULTON
+	[[ $WRONGOUT_DIR    == 0 ]] && WRONGOUT_DIR_DEFAULT=$DEFAULTOFF    || WRONGOUT_DIR_DEFAULT="${DEFAULTON1} ${WRONGOUT_DIR}${NC}"
+	[[ $TIMEOUT         == 0 ]] && TIMEOUT_DEFAULT=$DEFAULTOFF         || TIMEOUT_DEFAULT="${DEFAULTON1} ${TIMEOUT} seconds${NC}"
+	[[ $UNSORTED_OUTPUT == 0 ]] && UNSORTED_OUTPUT_DEFAULT=$DEFAULTOFF || UNSORTED_OUTPUT_DEFAULT=$DEFAULTON
+	[[ $CLOCK           == 0 ]] && CLOCK_DEFAULT=$DEFAULTOFF           || CLOCK_DEFAULT=$DEFAULTON
 
-TESTDATA_DIR_DEFAULT="${DEFAULTON1} ${TESTDATA_DIR}${NC}"
-OUTPUT_DEFAULT="${DEFAULTON1} ${OUTPUT}${NC}"
+	TESTDATA_DIR_DEFAULT="${DEFAULTON1} ${TESTDATA_DIR}${NC}"
+	OUTPUT_DEFAULT="${DEFAULTON1} ${OUTPUT}${NC}"
+}
 
 # ======================== SMALL FUNCTIONS ========================
 
@@ -121,6 +123,7 @@ test_inputs() {
 }
 
 echo_help() { # displays help screen
+	helpscreen_defaults_display_setup
 	echo -e "${BLUE}${BOLD}              progTester v$VERSION${NC} ${BOLD}by Prokop Hanzl${NC}
 ${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q]
                          [-w <wrongouts-dir>] [-k <seconds>] [-o <output>] [-u] [-c]

@@ -41,6 +41,6 @@
  Do you enjoy progTester and know bash? Help by contributing! Feel free to submit pull requests with new features you create, or work on one of the [issues](https://github.com/ProkopHanzl/progTester/issues).
 
 ## Acknowledgements
-[Vidar Holen](https://github.com/koalaman) for [shellcheck](https://shellcheck.net), a great tool that helps me immensely when developing the script.
+ [Vidar Holen](https://github.com/koalaman) for [shellcheck](https://shellcheck.net), a great tool that helps me immensely when developing the script.
 
-[Jakub Charvat](https://github.com/jakcharvat) for the initial idea of a [more featured test script for ProgTest](https://gist.github.com/jakcharvat/c8ab918d3927361ae6d5d977587752d2).
+ [Jakub Charvat](https://github.com/jakcharvat) for the initial idea of a [more featured test script for ProgTest](https://gist.github.com/jakcharvat/c8ab918d3927361ae6d5d977587752d2).

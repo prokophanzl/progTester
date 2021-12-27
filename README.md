@@ -28,7 +28,7 @@
 ## Exit codes
  | exit code | meaning |
  |---|---|
- | 0 | sucessful run |
+ | 0 | sucessful run (or help/usage called) |
  | 1 | error compiling |
  | 2 | wrong output(s) and/or timeout(s) |
  | 3 | source code wasn't specified or doesn't exist |

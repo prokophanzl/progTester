@@ -34,6 +34,8 @@ GRAY='\033[0;90m'
 BOLD='\033[1m'
 NC='\033[0m'
 
+USAGE="${BOLD}usage:${NC} progtester -s <source-code> ${GRAY}[-cquv] [-k <seconds>] [-o <output>] [-t <testdata-dir>] [-w <wrongouts-dir>]"
+
 # ======================== FACTORY DEFAULT VALUES ========================
 
 PROG=0 # source code
@@ -85,11 +87,14 @@ ERRORS=(
 	""                                                              # 0: not an error (successful run)
 	"Error compiling."                                              # 1
 	""                                                              # 2: not an error (exit code for unsuccessful runs)
-	"Please specify valid source file."                             # 3
-	"Invalid test data directory."                                  # 4
+	"Please specify valid source file.
+${NC}${USAGE}"                                                      # 3
+	"Invalid test data directory.
+${NC}${USAGE}"                                                      # 4
 	"Missing dependencies."                                         # 5
 	"Timeout is not a number."                                      # 6
-	"Unkown option used. See ${PURPLE}progtester -h${LIGHTYELLOW}." # 7
+	"Unkown option used. See ${PURPLE}progtester -h${LIGHTYELLOW}.
+${NC}${USAGE}"                                                      # 7
 )
 
 error() {
@@ -142,11 +147,14 @@ test_inputs() {
 	! timeout_valid              && error 6
 }
 
+echo_usage() {
+	echo -e "$USAGE"
+}
+
 echo_help() { # displays help screen
 	helpscreen_defaults_display_setup
 	echo -e "${BLUE}${BOLD}              progTester v$VERSION${NC} ${BOLD}by Prokop Hanzl${NC}
-${BOLD}       usage:${NC} progtester -s <source-code> [-t <testdata-dir>] [-v|-q]
-                         [-w <wrongouts-dir>] [-k <seconds>] [-o <output>] [-u] [-c]
+       ${USAGE}${NC}
 ${BOLD}requirements:${NC} test data must be in the format ${YELLOW}SOMETHING_in.txt ${GREEN}SOMETHING_out.txt${NC}
 ${BOLD}dependencies:${NC} GNU coreutils - on macOS: brew install coreutils
               g++ (g++-11 on macOS - brew install g++)
@@ -293,6 +301,11 @@ print_stats() { # prints stats about successful/unsuccessful runs
 }
 
 # ======================== BODY ========================
+
+if [[ $# == 0 ]]; then
+	echo_usage
+	exit 0
+fi
 
 while getopts ":hs:t:qvw:k:o:uc" OPT; do
 	case $OPT in

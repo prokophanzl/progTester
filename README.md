@@ -3,7 +3,7 @@ progTester is a C/C++ test script developed mainly for ProgTest (FIT CTU).
 
 ## Usage
 `progtester.sh -s <source-code> [-t <testdata-dir>]`, where `<source-code>` is the source code and `<testdata-dir>` is the directory containing test data (the name `testdata` is assumed by default).
-Test data must be in the format of `SOMETHING_in.txt` `SOMETHING_out.txt`, where `SOMETHING` is the same between the in and out files. See [Flags](#flags) for more options.
+Test data must be in the format of `SOMETHING_in.txt` `SOMETHING_out.txt`, where `SOMETHING` is the same between the in and out files. See [Flags](#flags) for more options or [EXAMPLE.md](https://github.com/ProkopHanzl/progTester/blob/master/example/EXAMPLE.md) for example usage.
 
 ## Setup recommendation
 Clone this repository to a directory on your computer. Add a folder to your PATH and make a link to `progtester.sh` in it.

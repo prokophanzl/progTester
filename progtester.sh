@@ -48,7 +48,7 @@ OUTPUT='/tmp/progtester/tester' # compiler output
 UNSORTED_OUTPUT=0 # unsorted-output toggle
 CLOCK=0 # clock toggle
 
-CONFIGFILE=~/.progtester/progtester.config
+CONFIGFILE="$HOME/.progtester/progtester.config"
 # shellcheck disable=SC1090
 [[ -f $CONFIGFILE ]] && . $CONFIGFILE # if it exists, include user config
 

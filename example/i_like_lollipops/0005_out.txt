@@ -1,0 +1,2 @@
+Input range in the format FROM TO:
+Invalid input.

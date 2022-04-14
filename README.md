@@ -1,6 +1,6 @@
 # progTester
-| :exclamation:  progTester is now discontinued and no further updates will be issued.   |
-|----------------------------------------------------------------------------------------|
+| :exclamation:  This project is now discontinued and no further updates will be issued.   |
+|------------------------------------------------------------------------------------------|
 
 progTester is a C/C++ test script developed mainly for ProgTest (FIT CTU).
 
